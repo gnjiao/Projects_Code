@@ -24,7 +24,7 @@ namespace Model
         {
             lock (lockobj)
             {
-                if (Instance==null)
+                if (Instance == null)
                 {
                     Instance = XmlHelper.XmlDeserialize<StationConfiguration>("./Configuration/StationConfiguration.xml");
                 }
@@ -35,11 +35,14 @@ namespace Model
         #endregion
 
         /// <remarks/>
-        public byte PanelNum { set; get; }
+        public int PanelCountOfStation { set; get; }
 
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute("Station")]
         public Station[] Stations { set; get; }
+
+        [System.Xml.Serialization.XmlElementAttribute("SlaveGroup")]
+        public SlaveGroup[] SlaveGroups { set; get; }
     }
 
     /// <remarks/>
@@ -54,6 +57,28 @@ namespace Model
         [System.Xml.Serialization.XmlAttributeAttribute()]
         public string color { set; get; }
     }
-
-
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+    public partial class SlaveGroup
+    {
+        [System.Xml.Serialization.XmlElementAttribute("Slave")]
+        public Slave[] Slaves { get; set; }
+        [System.Xml.Serialization.XmlAttributeAttribute]
+        public string name { set; get; }
+        [System.Xml.Serialization.XmlAttributeAttribute]
+        public string description { set; get; }
+    }
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+    public partial class Slave
+    {
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string ip { set; get; }
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int port { set; get; }
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public bool enable { set; get; }
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string description { set; get; }
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string name { set; get; }
+    }
 }

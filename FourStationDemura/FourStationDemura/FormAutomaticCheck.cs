@@ -175,14 +175,29 @@ namespace FourStationDemura
         StationConfiguration stationConfiguration = StationConfiguration.GetInstance();
         public void SetDgvPanelRowColor()
         {
-            int index = 0;
-            foreach (Station station in stationConfiguration.Stations)
+            int RowIndex = 0;
+            Label[] labels = new Label[stationConfiguration.Stations.Length];
+
+            for (int j = 0; j < stationConfiguration.Stations.Length; j++)
             {
-                for (int i = 0; i < stationConfiguration.PanelNum; i++)
+                Station station = stationConfiguration.Stations[j];
+
+
+                Color backgroundColor = ColorTranslator.FromHtml(station.color);
+                for (int i = 0; i < stationConfiguration.PanelCountOfStation; i++)
                 {
-                    this.dgvPanel.Rows[index++].DefaultCellStyle.BackColor = ColorTranslator.FromHtml(station.color);
+                    this.dgvPanel.Rows[RowIndex++].DefaultCellStyle.BackColor = backgroundColor;
                 }
+                labels[j] = new Label();
+                labels[j].TextAlign = ContentAlignment.MiddleCenter;
+                labels[j].AutoSize = true;
+                labels[j].Text = station.name;
+                labels[j].BackColor = backgroundColor;
+                labels[j].Left = this.dgvPanel.Left - labels[j].Text.Length * 10;
+
+                labels[j].Top = j == 0 ? this.dgvPanel.Top : labels[j - 1].Top + labels[j - 1].Height + 5;
             }
+            this.gbResultPrompt.Controls.AddRange(labels);
         }
         #endregion
 
@@ -373,24 +388,24 @@ namespace FourStationDemura
                             color = Color.FromArgb(R, G, B);
 
 
-                                                //Add 2018/5/21 Set the raster color
-                    var tasks = new List<Task>();
+                            //Add 2018/5/21 Set the raster color
+                            var tasks = new List<Task>();
 
-                    foreach (var iixServer in Global.ListIIXSerevr)
-                    {
-                        if (iixServer.IsEnable == false) continue;
-
-                        if (iixServer.SvrType == SvrType.Right)
-                        {
-                            tasks.Add(Task.Factory.StartNew(() =>
+                            foreach (var iixServer in Global.ListIIXSerevr)
                             {
-                                IIXExecute.SetRasterImage(iixServer, PgSelectCode.Primary, color, false);
-                            }));
-                        }
-                    }
+                                if (iixServer.IsEnable == false) continue;
 
-                    Task.WaitAll(tasks.ToArray());
-                    //Add 2018/5/21
+                                if (iixServer.SvrType == SvrType.Right)
+                                {
+                                    tasks.Add(Task.Factory.StartNew(() =>
+                                    {
+                                        IIXExecute.SetRasterImage(iixServer, PgSelectCode.Primary, color, false);
+                                    }));
+                                }
+                            }
+
+                            Task.WaitAll(tasks.ToArray());
+                            //Add 2018/5/21
 
 
                             this.Invoke((MethodInvoker)delegate
@@ -910,7 +925,7 @@ namespace FourStationDemura
                     #region Ted Modified 20180521
 
                     //this.DeleteDgvRow();
-                    this.DeleteDgvRow(this.dgvPanel, 0,stationConfiguration.PanelNum);
+                    this.DeleteDgvRow(this.dgvPanel, 0,stationConfiguration.PanelCountOfStation);
                     
                     #endregion
                 }
@@ -1303,8 +1318,9 @@ namespace FourStationDemura
 
             //}
 
-            for (int i = 0; i < stationConfiguration.PanelNum*stationConfiguration.Stations.Length; i++)
+            for (int i = 0; i < stationConfiguration.PanelCountOfStation * stationConfiguration.Stations.Length; i++)
             {
+
                 int index = this.dgvPanel.Rows.Add();
 
                 this.dgvPanel.Rows[index].Cells[0].Value = "1";
@@ -1314,9 +1330,11 @@ namespace FourStationDemura
                 this.dgvPanel.Rows[index].Cells[4].Value = "成功";
                 this.dgvPanel.Rows[index].Cells[5].Value = "成功";
                 this.dgvPanel.Rows[index].Cells[6].Value = "成功";
+
+                #endregion
             }
-            #endregion
-            SetDgvPanelRowColor();
+                SetDgvPanelRowColor();
+            
         }
 
         private void FormAutomaticCheck_Load(object sender, EventArgs e)
@@ -1326,8 +1344,11 @@ namespace FourStationDemura
 
             this.pbRotaryTable.Image = Image.FromFile(Application.StartupPath + "\\Image\\RotaryTable.png");
             this.gbCheckPrompt.Width = 147 * 3 + 24;
+            
+            #region Ted modified 20180522
 
-            for (int i = 1; i <= 3; i++)
+            //for (int i = 1; i <= 3; i++)
+            for (int i=1;i<=stationConfiguration.PanelCountOfStation;i++)
             {
                 this.promptInfo = new UserPromptInfo("#" + i);
                 this.promptInfo.SetPromptInfo(this.imgList.Images["No.png"], "不能上料");
@@ -1336,7 +1357,9 @@ namespace FourStationDemura
                 this.promptInfo.Margin = new Padding(3, 20, 3, 3);
             }
 
-            this.gbCheckPrompt.Width = this.promptInfo.Width * 3 + 24;
+            //this.gbCheckPrompt.Width = this.promptInfo.Width * 3 + 24;
+            this.gbCheckPrompt.Width = (this.promptInfo.Width +8)* stationConfiguration.PanelCountOfStation;
+            #endregion
 
             //初始化检查主界面是否初始化完成
             this.timerCheckInit = new System.Timers.Timer();
@@ -1537,7 +1560,7 @@ namespace FourStationDemura
             if (this.IsWork())
             {
                 //启动按钮2
-                if (Global.IoCard.ReadInBit(4) == 1)
+                if (Global.IoCard.ReadInBit(4) == 1) //侦测IO口，启动按键2是否按下
                 {
                     //启动按钮灯亮
                     Global.ControlCard.WriteOutbit(30, 0);

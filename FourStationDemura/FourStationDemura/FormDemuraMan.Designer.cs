@@ -108,6 +108,7 @@
             this.rtbLog.Size = new System.Drawing.Size(383, 677);
             this.rtbLog.TabIndex = 2;
             this.rtbLog.Text = "";
+            this.rtbLog.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.rtbLog_KeyPress);
             // 
             // gbProduct
             // 

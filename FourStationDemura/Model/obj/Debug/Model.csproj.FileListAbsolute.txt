@@ -5,10 +5,3 @@ E:\WorkSpace\FourStationDemura\FourStationDemura\bin\Debug\Model.pdb
 E:\WorkSpace\FourStationDemura\FourStationDemura\Model\obj\Debug\Model.csprojResolveAssemblyReference.cache
 E:\WorkSpace\FourStationDemura\FourStationDemura\Model\obj\Debug\Model.dll
 E:\WorkSpace\FourStationDemura\FourStationDemura\Model\obj\Debug\Model.pdb
-C:\Users\TongSheng\Desktop\FourStationDemura\FourStationDemura\bin\Debug\Model.dll
-C:\Users\TongSheng\Desktop\FourStationDemura\FourStationDemura\bin\Debug\Model.pdb
-C:\Users\TongSheng\Desktop\FourStationDemura\FourStationDemura\Model\obj\Debug\Model.csprojAssemblyReference.cache
-C:\Users\TongSheng\Desktop\FourStationDemura\FourStationDemura\Model\obj\Debug\Model.csproj.CoreCompileInputs.cache
-C:\Users\TongSheng\Desktop\FourStationDemura\FourStationDemura\Model\obj\Debug\Model.csproj.CopyComplete
-C:\Users\TongSheng\Desktop\FourStationDemura\FourStationDemura\Model\obj\Debug\Model.dll
-C:\Users\TongSheng\Desktop\FourStationDemura\FourStationDemura\Model\obj\Debug\Model.pdb

@@ -1,4 +1,5 @@
 ﻿using IIXDeMuraApi;
+using Model;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -180,6 +181,8 @@ namespace FourStationDemura
             return f;
         }
 
+
+        StationConfiguration stationConfig = StationConfiguration.GetInstance();
         /// <summary>
         /// 初始化IIX服务端
         /// </summary>
@@ -192,62 +195,94 @@ namespace FourStationDemura
                 IIXServer iixServer = null;
                 CmdResultCode cmdRes = CmdResultCode.Other;
 
-                for (int i = 1; i <= 3; i++)
+                #region Ted modified 20180522
+                foreach (SlaveGroup slaveGroup in stationConfig.SlaveGroups)
                 {
-                    int index = this.dgvServer.Rows.Add();
+                    foreach (Slave slave in slaveGroup.Slaves)
+                    {
+                        int index = this.dgvServer.Rows.Add();
+                        iixServer = new IIXServer();
 
-                    iixServer = new IIXServer();
+                        iixServer.DmrSvrApi = new IixDmrSvrApi();
+                        iixServer.Ip = slave.ip;
+                        iixServer.IsEnable = slave.enable;
+                        iixServer.AssociatedPanelPos = slave.description;
+                        //iixServer.SvrType = SvrType.Left;
 
-                    string ip = IniFile.IniReadValue(string.Format("ServerLeft#" + i), "IP", Global.ConfigPath);
-                    bool isEnable = IniFile.IniReadValue(string.Format("ServerLeft#" + i), "IsEnable", Global.ConfigPath) == "1" ? true : false;
+                        this.SetEventHandlers(iixServer);
 
-                    iixServer.DmrSvrApi = new IixDmrSvrApi();
-                    iixServer.Ip = ip;
-                    iixServer.IsEnable = isEnable;
-                    iixServer.AssociatedPanelPos = "#" + i;
-                    iixServer.SvrType = SvrType.Left;
+                        DataGridViewRow row = this.dgvServer.Rows[index];
+                        row.Cells["Enable"].Value = slave.enable;
+                        row.Cells["ServerIP"].Value = slave.ip;
+                        row.Cells["ServerPort"].Value = iixServer.Port;
+                        row.Cells["Open"].Value = iixServer.ConnState.ToString();
+                        row.Cells["PgPrimary"].Value = iixServer.OutlineState[0].ToString();
+                        row.Cells["PgSecondary"].Value = iixServer.OutlineState[1].ToString(); ;
+                        row.Cells["Status"].Value = iixServer.ResultState.ToString();
+                        row.Cells["LatestResult"].Value = iixServer.LatestResult;
 
-                    this.SetEventHandlers(iixServer);
-
-                    this.dgvServer.Rows[index].Cells["Enable"].Value = isEnable;
-                    this.dgvServer.Rows[index].Cells["ServerIP"].Value = ip;
-                    this.dgvServer.Rows[index].Cells["ServerPort"].Value = iixServer.Port;
-                    this.dgvServer.Rows[index].Cells["Open"].Value = iixServer.ConnState.ToString();
-                    this.dgvServer.Rows[index].Cells["PgPrimary"].Value = iixServer.OutlineState[0].ToString();
-                    this.dgvServer.Rows[index].Cells["PgSecondary"].Value = iixServer.OutlineState[1].ToString(); ;
-                    this.dgvServer.Rows[index].Cells["Status"].Value = iixServer.ResultState.ToString();
-                    this.dgvServer.Rows[index].Cells["LatestResult"].Value = iixServer.LatestResult;
-
-                    Global.ListIIXSerevr.Add(iixServer);
+                        Global.ListIIXSerevr.Add(iixServer);
+                    }
                 }
 
-                for (int i = 1; i <= 3; i++)
-                {
-                    int index = this.dgvServer.Rows.Add();
+                //for (int i = 1; i <= 3; i++)
+                //{
+                //    int index = this.dgvServer.Rows.Add();
 
-                    iixServer = new IIXServer();
+                //    iixServer = new IIXServer();
 
-                    string ip = IniFile.IniReadValue(string.Format("ServerRight#" + i), "IP", Global.ConfigPath);
-                    bool isEnable = IniFile.IniReadValue(string.Format("ServerRight#" + i), "IsEnable", Global.ConfigPath) == "1" ? true : false;
+                //    string ip = IniFile.IniReadValue(string.Format("ServerLeft#" + i), "IP", Global.ConfigPath);
+                //    bool isEnable = IniFile.IniReadValue(string.Format("ServerLeft#" + i), "IsEnable", Global.ConfigPath) == "1" ? true : false;
 
-                    iixServer.DmrSvrApi = new IixDmrSvrApi();
-                    iixServer.Ip = ip;
-                    iixServer.IsEnable = isEnable;
-                    iixServer.AssociatedPanelPos = "#" + i;
-                    iixServer.SvrType = SvrType.Right;
+                //    iixServer.DmrSvrApi = new IixDmrSvrApi();
+                //    iixServer.Ip = ip;
+                //    iixServer.IsEnable = isEnable;
+                //    iixServer.AssociatedPanelPos = "#" + i;
+                //    iixServer.SvrType = SvrType.Left;
 
-                    this.SetEventHandlers(iixServer);
+                //    this.SetEventHandlers(iixServer);
 
-                    this.dgvServer.Rows[index].Cells["Enable"].Value = isEnable;
-                    this.dgvServer.Rows[index].Cells["ServerIP"].Value = ip;
-                    this.dgvServer.Rows[index].Cells["ServerPort"].Value = iixServer.Port;
-                    this.dgvServer.Rows[index].Cells["Open"].Value = iixServer.ConnState.ToString();
-                    this.dgvServer.Rows[index].Cells["PgPrimary"].Value = iixServer.OutlineState[0].ToString();
-                    this.dgvServer.Rows[index].Cells["PgSecondary"].Value = iixServer.OutlineState[1].ToString(); ;
-                    this.dgvServer.Rows[index].Cells["Status"].Value = iixServer.ResultState.ToString();
-                    this.dgvServer.Rows[index].Cells["LatestResult"].Value = iixServer.LatestResult;
-                    Global.ListIIXSerevr.Add(iixServer);
-                }
+                //    this.dgvServer.Rows[index].Cells["Enable"].Value = isEnable;
+                //    this.dgvServer.Rows[index].Cells["ServerIP"].Value = ip;
+                //    this.dgvServer.Rows[index].Cells["ServerPort"].Value = iixServer.Port;
+                //    this.dgvServer.Rows[index].Cells["Open"].Value = iixServer.ConnState.ToString();
+                //    this.dgvServer.Rows[index].Cells["PgPrimary"].Value = iixServer.OutlineState[0].ToString();
+                //    this.dgvServer.Rows[index].Cells["PgSecondary"].Value = iixServer.OutlineState[1].ToString(); ;
+                //    this.dgvServer.Rows[index].Cells["Status"].Value = iixServer.ResultState.ToString();
+                //    this.dgvServer.Rows[index].Cells["LatestResult"].Value = iixServer.LatestResult;
+
+                //    Global.ListIIXSerevr.Add(iixServer);
+                //}
+
+                //for (int i = 1; i <= 3; i++)
+                //{
+                //    int index = this.dgvServer.Rows.Add();
+
+                //    iixServer = new IIXServer();
+
+                //    string ip = IniFile.IniReadValue(string.Format("ServerRight#" + i), "IP", Global.ConfigPath);
+                //    bool isEnable = IniFile.IniReadValue(string.Format("ServerRight#" + i), "IsEnable", Global.ConfigPath) == "1" ? true : false;
+
+                //    iixServer.DmrSvrApi = new IixDmrSvrApi();
+                //    iixServer.Ip = ip;
+                //    iixServer.IsEnable = isEnable;
+                //    iixServer.AssociatedPanelPos = "#" + i;
+                //    iixServer.SvrType = SvrType.Right;
+
+                //    this.SetEventHandlers(iixServer);
+
+                //    this.dgvServer.Rows[index].Cells["Enable"].Value = isEnable;
+                //    this.dgvServer.Rows[index].Cells["ServerIP"].Value = ip;
+                //    this.dgvServer.Rows[index].Cells["ServerPort"].Value = iixServer.Port;
+                //    this.dgvServer.Rows[index].Cells["Open"].Value = iixServer.ConnState.ToString();
+                //    this.dgvServer.Rows[index].Cells["PgPrimary"].Value = iixServer.OutlineState[0].ToString();
+                //    this.dgvServer.Rows[index].Cells["PgSecondary"].Value = iixServer.OutlineState[1].ToString(); ;
+                //    this.dgvServer.Rows[index].Cells["Status"].Value = iixServer.ResultState.ToString();
+                //    this.dgvServer.Rows[index].Cells["LatestResult"].Value = iixServer.LatestResult;
+                //    Global.ListIIXSerevr.Add(iixServer);
+                //}
+
+                #endregion
 
                 var tasks = new List<Task>();
 
@@ -261,7 +296,20 @@ namespace FourStationDemura
                         //连接成功后就打开
                         if (cmdRes == CmdResultCode.Success)
                         {
+                            Log.WriterActionLog(string.Format("Slave {0}:{1} connected SUCCESS!", _iixServer.Ip, _iixServer.Port));
                             cmdRes = IIXExecute.Open(_iixServer);
+                            if (cmdRes == CmdResultCode.Success)
+                            {
+                                Log.WriterActionLog(string.Format("Slave {0}:{1} open SUCCESS!", _iixServer.Ip, _iixServer.Port));
+                            }
+                            else
+                            {
+                                Log.WriterExceptionLog(string.Format("Slave {0}:{1} open FAIL!", _iixServer.Ip, _iixServer.Port));
+                            }
+                        }
+                        else
+                        {
+                            Log.WriterExceptionLog(string.Format("Slave {0}:{1} connected FAIL!", _iixServer.Ip, _iixServer.Port));
                         }
                     }));
                 }
@@ -743,16 +791,12 @@ namespace FourStationDemura
                 if (this.formAutomaticCheck == null)
                 {
                     this.formAutomaticCheck = new FormAutomaticCheck();
-                    this.formAutomaticCheck.MdiParent = this;
-                    this.formAutomaticCheck.WindowState = FormWindowState.Maximized;
-                    this.formAutomaticCheck.Show();
                 }
-                else
-                {
-                    this.formAutomaticCheck.Show();
-                    this.formAutomaticCheck.BringToFront();
-                    this.formAutomaticCheck.WindowState = FormWindowState.Maximized;
-                }
+
+                this.formAutomaticCheck.MdiParent = this;
+                this.formAutomaticCheck.WindowState = FormWindowState.Maximized;
+                this.formAutomaticCheck.Show();
+                this.formAutomaticCheck.BringToFront();
             }
         }
 
@@ -788,15 +832,11 @@ namespace FourStationDemura
                 {
                     this.formManualCheck = new FormManualCheck();
                     this.formManualCheck.MdiParent = this;
-                    this.formManualCheck.WindowState = FormWindowState.Maximized;
-                    this.formManualCheck.Show();
                 }
-                else
-                {
-                    this.formManualCheck.Show();
-                    this.formManualCheck.BringToFront();
-                    this.formManualCheck.WindowState = FormWindowState.Maximized;
-                }
+
+                this.formManualCheck.WindowState = FormWindowState.Maximized;
+                this.formManualCheck.Show();
+                this.formManualCheck.BringToFront();
             }
         }
 
@@ -809,7 +849,7 @@ namespace FourStationDemura
         {
             for (int i = 0; i < this.dgvServer.ColumnCount; i++)
             {
-                this.dgvServer.Columns[i].Width = (this.dgvServer.Width - 48) / 8;
+                this.dgvServer.Columns[i].Width = (this.dgvServer.Width - 48) / dgvServer.ColumnCount;
             }
         }
 
@@ -852,5 +892,15 @@ namespace FourStationDemura
         }
 
         #endregion
+
+        private void rtbLog_KeyPress(object sender, KeyPressEventArgs e)
+        { 
+            
+            if (e.KeyChar == (char)Keys.Back)
+            {
+                RichTextBox rtb = (RichTextBox)sender;
+                rtb.Text=rtb.Text.Remove(rtb.SelectionStart, rtb.SelectionLength);
+            }
+        }
     }
 }
