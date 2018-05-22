@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<StationConfiguration>
+	<PanelNum>4</PanelNum>
+	<Station name="Station1" color="#808080"/>
+	<Station name="Station2" color="#CC00FF"/>
+	<Station name="Station3" color="#FF0033"/>
+</StationConfiguration>

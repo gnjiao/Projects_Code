@@ -1,0 +1,11 @@
+E:\WorkSpace\FourStationDemura\FourStationDemura\bin\Debug\Common.dll
+E:\WorkSpace\FourStationDemura\FourStationDemura\bin\Debug\Common.pdb
+E:\WorkSpace\FourStationDemura\FourStationDemura\Common\obj\Debug\Common.csprojResolveAssemblyReference.cache
+E:\WorkSpace\FourStationDemura\FourStationDemura\Common\obj\Debug\Common.dll
+E:\WorkSpace\FourStationDemura\FourStationDemura\Common\obj\Debug\Common.pdb
+C:\Users\TongSheng\Desktop\FourStationDemura\FourStationDemura\bin\Debug\Common.dll
+C:\Users\TongSheng\Desktop\FourStationDemura\FourStationDemura\bin\Debug\Common.pdb
+C:\Users\TongSheng\Desktop\FourStationDemura\FourStationDemura\Common\obj\Debug\Common.csprojAssemblyReference.cache
+C:\Users\TongSheng\Desktop\FourStationDemura\FourStationDemura\Common\obj\Debug\Common.csproj.CoreCompileInputs.cache
+C:\Users\TongSheng\Desktop\FourStationDemura\FourStationDemura\Common\obj\Debug\Common.dll
+C:\Users\TongSheng\Desktop\FourStationDemura\FourStationDemura\Common\obj\Debug\Common.pdb
