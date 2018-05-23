@@ -5,3 +5,8 @@ E:\WorkSpace\FourStationDemura\FourStationDemura\bin\Debug\Model.pdb
 E:\WorkSpace\FourStationDemura\FourStationDemura\Model\obj\Debug\Model.csprojResolveAssemblyReference.cache
 E:\WorkSpace\FourStationDemura\FourStationDemura\Model\obj\Debug\Model.dll
 E:\WorkSpace\FourStationDemura\FourStationDemura\Model\obj\Debug\Model.pdb
+D:\Study\Git\FourStationDemura\bin\Debug\Model.dll
+D:\Study\Git\FourStationDemura\bin\Debug\Model.pdb
+D:\Study\Git\FourStationDemura\Model\obj\Debug\Model.csprojResolveAssemblyReference.cache
+D:\Study\Git\FourStationDemura\Model\obj\Debug\Model.dll
+D:\Study\Git\FourStationDemura\Model\obj\Debug\Model.pdb

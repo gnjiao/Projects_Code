@@ -138,7 +138,33 @@ namespace FourStationDemura
         public FormAutomaticCheck()
         {
             InitializeComponent();
+
+#if DEBUG
+            Button btnDebug = new Button();
+            btnDebug.Text = "DebugStart";
+            btnDebug.Click += BtnDebug_Click;
+            btnDebug.Top = this.pbRotaryTable.Top + this.pbRotaryTable.Height + 10;
+            btnDebug.Left = this.pbRotaryTable.Left;
+
+            this.splitContainer1.Panel1.Controls.Add(btnDebug);
+#endif
         }
+        #region Ted add control
+#if DEBUG
+        private void BtnDebug_Click(object sender, EventArgs e)
+        {
+            Global.IsInit = true;
+            this.isDemuraCheck = false;
+            this.isPanelOn = false;
+            this.isPanelOff = false;
+            this.isDemuraReinspection = false;
+            this.isWriteFlash = false;
+            this.isRotating = false;
+            Global.isContinue = false;
+            Global.isReset = false;
+        }
+#endif
+        #endregion
 
         #endregion
 
@@ -342,12 +368,12 @@ namespace FourStationDemura
         /// </summary>
         public void Start()
         {
-            this.timerAllPanelOn.Start();
-            this.timerAllPanelOff.Start();
-            this.timerPanelOnOrPanelOff.Start();
+            //this.timerAllPanelOn.Start();
+            //this.timerAllPanelOff.Start();
+            //this.timerPanelOnOrPanelOff.Start();
             this.timerRotate.Start();
-            this.timeEntranceGuard.Start();
-            this.timeGrating.Start();
+            //this.timeEntranceGuard.Start();  //检测门禁传感器的Timer
+            //this.timeGrating.Start();
         }
 
         /// <summary>
@@ -703,7 +729,7 @@ namespace FourStationDemura
                     Log.GetInstance().WarningWrite("转盘移动到指定位置失败，需复位后重新开始检测");
                     return false;
                 }
-
+                
                 this.BeginInvoke((MethodInvoker)delegate
                 {
                     Image img = this.pbRotaryTable.Image;
@@ -1596,14 +1622,14 @@ namespace FourStationDemura
                     //启动按钮灯亮
                     Global.ControlCard.WriteOutbit(29, 0);
 
-                    this.isAllPanelOnEvent = true;
+                    this.isAllPanelOnEvent = true;    //此值为true表明这个键被按下
 
                     //休眠一秒，看关灯按钮是否触发
                     Thread.Sleep(1000);
 
-                    if (this.isAllPanelOffEvent == false)
+                    if (this.isAllPanelOffEvent == false)  //表明熄灯按键没有按下
                     {
-                        this.PanelOn();
+                        this.PanelOn();                    //点屏
                         this.isAllPanelOnEvent = false;
 
                         Thread.Sleep(500);

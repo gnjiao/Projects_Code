@@ -3,3 +3,8 @@ E:\WorkSpace\FourStationDemura\FourStationDemura\bin\Debug\Common.pdb
 E:\WorkSpace\FourStationDemura\FourStationDemura\Common\obj\Debug\Common.csprojResolveAssemblyReference.cache
 E:\WorkSpace\FourStationDemura\FourStationDemura\Common\obj\Debug\Common.dll
 E:\WorkSpace\FourStationDemura\FourStationDemura\Common\obj\Debug\Common.pdb
+D:\Study\Git\FourStationDemura\bin\Debug\Common.dll
+D:\Study\Git\FourStationDemura\bin\Debug\Common.pdb
+D:\Study\Git\FourStationDemura\Common\obj\Debug\Common.csprojResolveAssemblyReference.cache
+D:\Study\Git\FourStationDemura\Common\obj\Debug\Common.dll
+D:\Study\Git\FourStationDemura\Common\obj\Debug\Common.pdb

@@ -660,6 +660,7 @@ namespace FourStationDemura
                     //return;
                 }
 
+                //9.根据选择的屏幕尺寸加载对应的设置
                 if (this.LoadProduct() == false)
                 {
                     //return;
@@ -669,6 +670,7 @@ namespace FourStationDemura
                 Global.SwitchProductEvent += Global_SwitchProductEvent;
                 Global.IsInit = true;
 
+                //10.Timer，用于侦测急停按钮按下
                 this.timerEmgStop = new System.Timers.Timer();
                 this.timerEmgStop.Interval = 100;
                 this.timerEmgStop.Elapsed += TimerEmgStop_Elapsed;

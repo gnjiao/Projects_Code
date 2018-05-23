@@ -43,7 +43,10 @@ namespace Model
 
         [System.Xml.Serialization.XmlElementAttribute("SlaveGroup")]
         public SlaveGroup[] SlaveGroups { set; get; }
+        [System.Xml.Serialization.XmlElementAttribute("ControlCards")]
+        public ControlCards ControlCardsCollection { set; get; }
     }
+
 
     /// <remarks/>
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
@@ -80,5 +83,37 @@ namespace Model
         public string description { set; get; }
         [System.Xml.Serialization.XmlAttributeAttribute()]
         public string name { set; get; }
+    }
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType =true)]
+    public partial class ControlCards
+    {
+        [System.Xml.Serialization.XmlElementAttribute("ControlCard")]
+        public ControlCard[] Cards { set; get; }
+    }
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+    public class ControlCard
+    {
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public double cardno { set; get; }
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string description { set; get; }
+        [System.Xml.Serialization.XmlElementAttribute("Axis")]
+        public Axis[] AxisCollection { set; get; }
+
+    }
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType =true)]
+    public class Axis
+    {
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int num { set; get; }
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public double step { set; get; }
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public double Lead { set; get; }
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public double Speed { set; get; }
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public double MaxLimitmm { set; get; }
+        public double WorkStation { set; get; }
     }
 }
