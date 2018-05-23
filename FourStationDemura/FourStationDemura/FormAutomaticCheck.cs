@@ -1,4 +1,6 @@
-﻿using IIXDeMuraApi;
+﻿#define TimerSuspend 
+
+using IIXDeMuraApi;
 using Model;
 using System;
 using System.Collections.Generic;
@@ -368,12 +370,12 @@ namespace FourStationDemura
         /// </summary>
         public void Start()
         {
-            //this.timerAllPanelOn.Start();
-            //this.timerAllPanelOff.Start();
-            //this.timerPanelOnOrPanelOff.Start();
+            this.timerAllPanelOn.Start();
+            this.timerAllPanelOff.Start();
+            this.timerPanelOnOrPanelOff.Start();
             this.timerRotate.Start();
-            //this.timeEntranceGuard.Start();  //检测门禁传感器的Timer
-            //this.timeGrating.Start();
+            this.timeEntranceGuard.Start();  //检测门禁传感器的Timer
+            this.timeGrating.Start();
         }
 
         /// <summary>
@@ -390,7 +392,29 @@ namespace FourStationDemura
 
             this.threadLoop = false;
         }
+        /// <summary>
+        /// 停止上下料检测
+        /// </summary>
+        public void StopCheck()
+        {
+            //检测完后关灯
+            var tasks = new List<Task>();
 
+            foreach (var iixServer in Global.ListIIXSerevr)
+            {
+                if (iixServer.IsEnable == false) continue;
+
+                if (iixServer.SvrType == SvrType.Right)
+                {
+                    tasks.Add(Task.Factory.StartNew(() =>
+                    {
+                        iixServer.DmrSvrApi.PanelOff(PgSelectCode.Primary);
+                    }));
+                }
+            }
+
+            Task.WaitAll(tasks.ToArray());
+        }
         /// <summary>
         /// 连续检查
         /// </summary>
@@ -414,6 +438,14 @@ namespace FourStationDemura
                             color = Color.FromArgb(R, G, B);
 
 
+
+
+                            this.Invoke((MethodInvoker)delegate
+                            {
+                                this.pnlColor.BackColor = color;
+                                this.gbPattern.Text = "Pattern" + i;
+                            });
+
                             //Add 2018/5/21 Set the raster color
                             var tasks = new List<Task>();
 
@@ -432,13 +464,6 @@ namespace FourStationDemura
 
                             Task.WaitAll(tasks.ToArray());
                             //Add 2018/5/21
-
-
-                            this.Invoke((MethodInvoker)delegate
-                            {
-                                this.pnlColor.BackColor = color;
-                                this.gbPattern.Text = "Pattern" + i;
-                            });
 
                             Thread.Sleep(sleepTime * 1000);
                         }
@@ -965,7 +990,7 @@ namespace FourStationDemura
 
                //var tasks = new List<Task>();
 
-                foreach (var _iixServer in Global.ListIIXSerevr)
+                foreach (var _iixServer in Global.ListIIXSerevr)   //如果输入参数不为null，不进行点灯动作，如果为null，点右边的灯？
                 {
                     if (_iixServer.IsEnable == false) continue;
                     if (iixServer != null && iixServer != _iixServer) continue;
@@ -1462,6 +1487,10 @@ namespace FourStationDemura
         /// <param name="e"></param>
         private void TimeEntranceGuard_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
+#if TimerSuspend
+            System.Timers.Timer t = (System.Timers.Timer)sender;
+            t.Stop();
+#endif
             if (Global.IoCard.ReadInBit(1) == 1)
             {
                 this.Stop();
@@ -1477,6 +1506,9 @@ namespace FourStationDemura
 
                 Global.isContinue = true;
             }
+#if TimerSuspend
+            t.Start();
+#endif
         }
 
         /// <summary>
@@ -1496,6 +1528,10 @@ namespace FourStationDemura
         /// <param name="e"></param>
         private void TimerRotate_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
+#if TimerSuspend
+                    System.Timers.Timer t = (System.Timers.Timer)sender;
+                    t.Stop();
+#endif
             if (this.IsWork())
             {
                 if (this.isAllPanelOnEvent && this.isAllPanelOffEvent)
@@ -1506,6 +1542,9 @@ namespace FourStationDemura
                     Thread.Sleep(500);
                 }
             }
+#if TimerSuspend
+                    t.Start();
+#endif
         }
 
         /// <summary>
@@ -1515,6 +1554,10 @@ namespace FourStationDemura
         /// <param name="e"></param>
         private void TimerPanelOnOrPanelOff_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
+#if TimerSuspend
+            System.Timers.Timer t = (System.Timers.Timer)sender;
+            t.Stop();
+#endif
             if (this.IsWork())
             {
                 IIXServer iixServer = null;
@@ -1574,6 +1617,9 @@ namespace FourStationDemura
                     Global.ControlCard.WriteOutbit(59, 0);
                 }
             }
+#if TimerSuspend
+            t.Start();
+#endif
         }
 
         /// <summary>
@@ -1583,6 +1629,10 @@ namespace FourStationDemura
         /// <param name="e"></param>
         private void TimerAllPanelOff_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
+#if TimerSuspend
+            System.Timers.Timer t = (System.Timers.Timer)sender;
+            t.Stop();
+#endif
             if (this.IsWork())
             {
                 //启动按钮2
@@ -1605,6 +1655,9 @@ namespace FourStationDemura
                     }
                 }
             }
+#if TimerSuspend
+            t.Start();
+#endif
         }
 
         /// <summary>
@@ -1614,6 +1667,10 @@ namespace FourStationDemura
         /// <param name="e"></param>
         private void TimerAllPanelOn_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
+#if TimerSuspend
+            System.Timers.Timer t = (System.Timers.Timer)sender;
+            t.Stop();
+#endif
             if (this.IsWork())
             {
                 //启动按钮1
@@ -1636,6 +1693,9 @@ namespace FourStationDemura
                     }
                 }
             }
+#if TimerSuspend
+            t.Start();
+#endif
         }
 
         /// <summary>
@@ -1742,7 +1802,7 @@ namespace FourStationDemura
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void btnSingleCheck_Click(object sender, EventArgs e)
+      private void btnSingleCheck_Click(object sender, EventArgs e)
         {
             try
             {
@@ -1757,26 +1817,60 @@ namespace FourStationDemura
                     return;
                 }
 
-                //判断Pattern是否启用
-                if (IniFile.IniReadValue("Pattern" + this.patternNumber, "Enabled", Global.ProductSettingPath) == "1")
+                this.StopCheck();
+
+                if (this.btnSingleCheck.Text == "开始检查")
                 {
-                    int R = Convert.ToInt32(IniFile.IniReadValue("Pattern" + this.patternNumber, "R", Global.ProductSettingPath));
-                    int G = Convert.ToInt32(IniFile.IniReadValue("Pattern" + this.patternNumber, "G", Global.ProductSettingPath));
-                    int B = Convert.ToInt32(IniFile.IniReadValue("Pattern" + this.patternNumber, "B", Global.ProductSettingPath));
-                    int sleepTime = Convert.ToInt32(IniFile.IniReadValue("Pattern" + this.patternNumber, "SleepTime", Global.ProductSettingPath));
+                    this.btnSingleCheck.Text = "停止检查";
+																																  
+																																  
+																																				  
 
-                    Color color = Color.FromArgb(R, G, B);
+                    //判断Pattern是否启用
+                    if (IniFile.IniReadValue("Pattern" + this.patternNumber, "Enabled", Global.ProductSettingPath) == "1")
+                    {
+                        int R = Convert.ToInt32(IniFile.IniReadValue("Pattern" + this.patternNumber, "R", Global.ProductSettingPath));
+                        int G = Convert.ToInt32(IniFile.IniReadValue("Pattern" + this.patternNumber, "G", Global.ProductSettingPath));
+                        int B = Convert.ToInt32(IniFile.IniReadValue("Pattern" + this.patternNumber, "B", Global.ProductSettingPath));
+                        int sleepTime = Convert.ToInt32(IniFile.IniReadValue("Pattern" + this.patternNumber, "SleepTime", Global.ProductSettingPath));
 
-                    this.pnlColor.BackColor = color;
-                    this.gbPattern.Text = "Pattern" + this.patternNumber;
+                        Color color = Color.FromArgb(R, G, B);
+																		 
 
-                    this.btnSingleCheck.Enabled = false;
-                    this.btnOnColor.Enabled = true;
-                    this.btnNextColor.Enabled = true;
+                        this.pnlColor.BackColor = color;
+                        this.gbPattern.Text = "Pattern" + this.patternNumber;
+
+                        this.btnOnColor.Enabled = true;
+                        this.btnNextColor.Enabled = true;
+
+                        var tasks = new List<Task>();
+
+                        foreach (var iixServer in Global.ListIIXSerevr)
+                        {
+                            if (iixServer.IsEnable == false) continue;
+
+                            if (iixServer.SvrType == SvrType.Right)
+                            {
+                                tasks.Add(Task.Factory.StartNew(() =>
+                                {
+                                    IIXExecute.SetRasterImage(iixServer, PgSelectCode.Primary, color, false);
+                                }));
+                            }
+                        }
+
+                        Task.WaitAll(tasks.ToArray());
+                    }
+                    else
+                    {
+                        Log.GetInstance().NormalWrite("没有设置Pattern，请去“系统设置中”设置");
+                    }
                 }
                 else
                 {
-                    Log.GetInstance().NormalWrite("没有设置Pattern，请去“系统设置中”设置");
+                    this.btnSingleCheck.Text = "开始检查";
+                    this.btnSingleCheck.Enabled = true;
+                    this.btnOnColor.Enabled = false;
+                    this.btnNextColor.Enabled = false;
                 }
             }
             catch (Exception ex)
@@ -1817,8 +1911,13 @@ namespace FourStationDemura
 
                     Color color = Color.FromArgb(R, G, B);
 
+                    this.pnlColor.BackColor = color;
+                    this.gbPattern.Text = "Pattern" + this.patternNumber;
 
-                    //Add 2018/5/21 Set the raster color
+
+                    this.btnOnColor.Enabled = true;
+                    this.btnNextColor.Enabled = true;
+
                     var tasks = new List<Task>();
 
                     foreach (var iixServer in Global.ListIIXSerevr)
@@ -1835,15 +1934,6 @@ namespace FourStationDemura
                     }
 
                     Task.WaitAll(tasks.ToArray());
-                    //Add 2018/5/21
-
-
-                    this.pnlColor.BackColor = color;
-                    this.gbPattern.Text = "Pattern" + this.patternNumber;
-
-                    this.btnSingleCheck.Enabled = false;
-                    this.btnOnColor.Enabled = true;
-                    this.btnNextColor.Enabled = true;
                 }
             }
             catch (Exception ex)
@@ -1884,8 +1974,13 @@ namespace FourStationDemura
 
                     Color color = Color.FromArgb(R, G, B);
 
+                    this.pnlColor.BackColor = color;
+                    this.gbPattern.Text = "Pattern" + this.patternNumber;
 
-                    //Add 2018/5/21 Set the raster color
+
+                    this.btnOnColor.Enabled = true;
+                    this.btnNextColor.Enabled = true;
+
                     var tasks = new List<Task>();
 
                     foreach (var iixServer in Global.ListIIXSerevr)
@@ -1902,15 +1997,6 @@ namespace FourStationDemura
                     }
 
                     Task.WaitAll(tasks.ToArray());
-                    //Add 2018/5/21
-
-
-                    this.pnlColor.BackColor = color;
-                    this.gbPattern.Text = "Pattern" + this.patternNumber;
-
-                    this.btnSingleCheck.Enabled = false;
-                    this.btnOnColor.Enabled = true;
-                    this.btnNextColor.Enabled = true;
                 }
                 else
                 {

@@ -151,7 +151,6 @@ D:\Study\Git\FourStationDemura\FourStationDemura\obj\Debug\FourStationDemura.exe
 D:\Study\Git\FourStationDemura\FourStationDemura\obj\Debug\FourStationDemura.pdb
 D:\Study\Git\FourStationDemura\bin\Debug\FourStationDemura.exe
 D:\Study\Git\FourStationDemura\bin\Debug\FourStationDemura.pdb
-D:\Study\Git\FourStationDemura\FourStationDemura\obj\Debug\FourStationDemura.csprojResolveAssemblyReference.cache
 D:\Study\Git\FourStationDemura\FourStationDemura\obj\Debug\FourStationDemura.FormAutomaticCheck.resources
 D:\Study\Git\FourStationDemura\FourStationDemura\obj\Debug\FourStationDemura.FormImageColor.resources
 D:\Study\Git\FourStationDemura\FourStationDemura\obj\Debug\FourStationDemura.FormManualCheck.resources
@@ -175,3 +174,6 @@ D:\Study\Git\FourStationDemura\FourStationDemura\obj\Debug\FourStationDemura.Use
 D:\Study\Git\FourStationDemura\FourStationDemura\obj\Debug\FourStationDemura.UserUpdatePassword.resources
 D:\Study\Git\FourStationDemura\FourStationDemura\obj\Debug\FourStationDemura.UserUserMan.resources
 D:\Study\Git\FourStationDemura\FourStationDemura\obj\Debug\FourStationDemura.csproj.GenerateResource.Cache
+D:\Study\Git\FourStationDemura\FourStationDemura\obj\Debug\FourStationDemura.csprojAssemblyReference.cache
+D:\Study\Git\FourStationDemura\FourStationDemura\obj\Debug\FourStationDemura.csproj.CoreCompileInputs.cache
+D:\Study\Git\FourStationDemura\FourStationDemura\obj\Debug\FourStationDemura.csproj.CopyComplete
