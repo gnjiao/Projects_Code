@@ -14,7 +14,7 @@ namespace FourStationDemura
         /// 确立和 SlavePC 的连接 
         /// </summary>
         /// <returns></returns>
-        public static CmdResultCode Connection(IIXServer iixServer)
+        public static CmdResultCode ConnectToSlave(IIXServer iixServer)
         {
             CmdResultCode cmdRes = CmdResultCode.Other;
 
@@ -92,7 +92,7 @@ namespace FourStationDemura
         /// </summary>
         /// <param name="iixServer"></param>
         /// <returns></returns>
-        public static int GetRemainingCount(IIXServer iixServer)
+        public static int GetLicenseRemainingCount(IIXServer iixServer)
         {
             CmdResultCode cmdRes = CmdResultCode.Other;
 
@@ -350,7 +350,7 @@ namespace FourStationDemura
                 }
 
                 //当所有流程执行完后关灯时添加成功/失败数
-                if (panel.IsRotate)
+                if (panel.bRotated)
                 {
                     if (cmdRes == CmdResultCode.Success)
                     {

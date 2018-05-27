@@ -31,7 +31,7 @@ namespace FourStationDemura
         /// <summary>
         /// 屏幕是否有旋转动作
         /// </summary>
-        public bool IsRotate
+        public bool bRotated
         {
             get { return mIsRotate; }
             set { mIsRotate = value; }

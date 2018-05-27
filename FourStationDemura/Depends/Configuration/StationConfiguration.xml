@@ -3,9 +3,45 @@
 	<PanelCountOfStation>4</PanelCountOfStation>
 	<Station name="Station1" color="#808080"/>
 	<Station name="Station2" color="#CC00FF"/>
-	<SlaveGroup name="" description="">
-		<Slave ip="192.168.0.1" port="3000" enable="true" description="相机1" name="Camera"/>
-		<Slave ip="192.168.0.2" port="3000" enable="true" description="相机2" name="Camera"/>
-		<Slave ip="192.168.0.3" port="3000" enable="true" description="相机3" name="Camera"/>
-	</SlaveGroup>
+	<SlaveGroups>
+		<SlaveGroup name="" description="">
+			<Slave ip="192.168.0.1" port="3000" enable="true" description="相机1" name="Camera1"/>
+			<Slave ip="192.168.0.2" port="3000" enable="true" description="相机2" name="Camera2"/>
+			<Slave ip="192.168.0.3" port="3000" enable="true" description="相机3" name="Camera3"/>
+		</SlaveGroup>
+	</SlaveGroups>
+	<ControlCards>
+		<ControlCard cardno="0" name="" description="">
+			<Axis num="0" step="10000" Lead="360" Speed="100" MaxLimitmm="360">
+				<WorkPosition>30</WorkPosition>
+				<WorkPosition>210</WorkPosition>
+			</Axis>
+			<Axis num="0" step="10000" Lead="360" Speed="100" MaxLimitmm="360">
+				<WorkPosition>30</WorkPosition>
+				<WorkPosition>210</WorkPosition>
+			</Axis>
+		</ControlCard>
+	</ControlCards>
+	<IOCards>
+		<IOCard cardno="0" name="IOCard0" description="">
+			<OutputPort name="红灯" bitno="25" description=""/>
+			<OutputPort name="黄灯" bitno="26" description=""/>
+			<OutputPort name="绿灯" bitno="27" description=""/>       
+			<OutputPort name="报警" bitno="28" description=""/>
+			<OutputPort name="启动按钮1灯" bitno="29" description=""/>
+			<OutputPort name="启动按钮2灯" bitno="30" description=""/>
+			<OutputPort name="按钮1灯" bitno="31" description=""/>
+			<OutputPort name="按钮2灯" bitno="32" description=""/>
+			<OutputPort name="按钮3灯" bitno="59" description=""/>
+			<OutputPort name="按钮4灯" bitno="159" description=""/>
+			<OutputPort name="转盘轴锁" bitno="60" description=""/>
+			<OutputPort name="VCR轴锁" bitno="61" description=""/> 
+			<InputPort name="急停按键" bitno="1" EventTrigger="LogicLow" interval="" description=""/><!--EnventTrigger,事件触发，0低电平触发，1高电平触发，2下降沿，3上升沿 !-->
+			<InputPort name="安全光栅" bitno="2" EventTrigger="LogicLow" interval="" description=""/> 
+			<InputPort name="按钮1" bitno="5" EventTrigger="LogicLow" interval="" description=""/> 
+			<InputPort name="按钮2" bitno="6" EventTrigger="LogicLow" interval="" description=""/> 
+			<InputPort name="按钮3" bitno="7" EventTrigger="LogicLow" interval="" description=""/> 
+			<InputPort name="按钮4" bitno="107" EventTrigger="LogicLow" interval="" description=""/> 
+		</IOCard>
+	</IOCards>
 </StationConfiguration>

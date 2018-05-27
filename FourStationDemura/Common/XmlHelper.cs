@@ -13,16 +13,25 @@ namespace Common
     {
         public static T XmlDeserialize<T>(string fileName)
         {
-            object obj = new object();
-
-            XmlSerializer xsl = new XmlSerializer(typeof(T));
-
-            using (FileStream fs=new FileStream (fileName,FileMode.Open,FileAccess.Read,FileShare.None))
+            try
             {
-                obj = xsl.Deserialize(fs);
+                object obj = new object();
+
+                XmlSerializer xsl = new XmlSerializer(typeof(T));
+
+                using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.None))
+                {
+                    obj = xsl.Deserialize(fs);
+                }
+
+                return (T)obj;
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
             }
 
-            return (T)obj;
         }
     }
 }

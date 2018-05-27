@@ -1,4 +1,5 @@
 ﻿using IIXDeMuraApi;
+using Model;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -245,7 +246,7 @@ namespace FourStationDemura
 
                     tasks.Add(Task.Factory.StartNew(() =>
                     {
-                        IIXExecute.Connection(iixServer);
+                        IIXExecute.ConnectToSlave(iixServer);
                     }));
                 }
 
@@ -332,7 +333,7 @@ namespace FourStationDemura
 
                     tasks.Add(Task.Factory.StartNew(() =>
                     {
-                        IIXExecute.GetRemainingCount(iixServer);
+                        IIXExecute.GetLicenseRemainingCount(iixServer);
                     }));
                 }
 
@@ -1082,39 +1083,40 @@ namespace FourStationDemura
             }
             else if (this.cbbIO.SelectedItem.ToString() == "报警")
             {
-                Global.ControlCard.WriteOutbit(28, 1);
+                Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("报警"), 1);
             }
             else if (this.cbbIO.SelectedItem.ToString() == "黄灯")
             {
-                Global.ControlCard.WriteOutbit(26, 1);
+                Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("红灯"), 1);
             }
             else if (this.cbbIO.SelectedItem.ToString() == "红灯")
             {
-                Global.ControlCard.WriteOutbit(25, 1);
+                Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("红灯"), 1);
             }
             else if (this.cbbIO.SelectedItem.ToString() == "绿灯")
             {
-                Global.ControlCard.WriteOutbit(27, 1);
+                //Global.ControlCard.WriteOutbit(27, 1);
+                Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("绿灯"), 1);
             }
             else if (this.cbbIO.SelectedItem.ToString() == "启动按钮1灯")
             {
-                Global.ControlCard.WriteOutbit(29, 1);
+                Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("启动按钮1灯"), 1);
             }
             else if (this.cbbIO.SelectedItem.ToString() == "启动按钮2灯")
             {
-                Global.ControlCard.WriteOutbit(30, 1);
+                Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("启动按钮2灯"), 1);
             }
             else if (this.cbbIO.SelectedItem.ToString() == "按钮1灯")
             {
-                Global.ControlCard.WriteOutbit(31, 1);
+                Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("按钮1灯"), 1);
             }
             else if (this.cbbIO.SelectedItem.ToString() == "按钮2灯")
             {
-                Global.ControlCard.WriteOutbit(32, 1);
+                Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("按钮2灯"), 1);
             }
             else if (this.cbbIO.SelectedItem.ToString() == "按钮3灯")
             {
-                Global.ControlCard.WriteOutbit(59, 1);
+                Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("按钮3灯"), 1);
             }
         }
 
@@ -1164,39 +1166,39 @@ namespace FourStationDemura
             }
             else if (this.cbbIO.SelectedItem.ToString() == "报警")
             {
-                Global.ControlCard.WriteOutbit(28, 0);
+                Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("报警"), 0);
             }
             else if (this.cbbIO.SelectedItem.ToString() == "黄灯")
             {
-                Global.ControlCard.WriteOutbit(26, 0);
+               Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("黄灯"), 0);
             }
             else if (this.cbbIO.SelectedItem.ToString() == "红灯")
             {
-                Global.ControlCard.WriteOutbit(25, 0);
+                Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("红灯"), 0);
             }
             else if (this.cbbIO.SelectedItem.ToString() == "绿灯")
             {
-                Global.ControlCard.WriteOutbit(27, 0);
+                Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("绿灯"), 0);
             }
             else if (this.cbbIO.SelectedItem.ToString() == "启动按钮1灯")
             {
-                Global.ControlCard.WriteOutbit(29, 0);
+                Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("启动按钮1灯"), 0);
             }
             else if (this.cbbIO.SelectedItem.ToString() == "启动按钮2灯")
             {
-                Global.ControlCard.WriteOutbit(30, 0);
+                Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("启动按钮2灯"), 0);
             }
             else if (this.cbbIO.SelectedItem.ToString() == "按钮1灯")
             {
-                Global.ControlCard.WriteOutbit(31, 0);
+                Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("按钮1灯"), 0);
             }
             else if (this.cbbIO.SelectedItem.ToString() == "按钮2灯")
             {
-                Global.ControlCard.WriteOutbit(32, 0);
+                Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("按钮2灯"), 0);
             }
             else if (this.cbbIO.SelectedItem.ToString() == "按钮3灯")
             {
-                Global.ControlCard.WriteOutbit(59, 0);
+                Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("按钮3灯"), 0);
             }
         }
 

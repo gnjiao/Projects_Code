@@ -1,4 +1,6 @@
-﻿using IIXDeMuraApi;
+﻿#define TimerSuspend 
+
+using IIXDeMuraApi;
 using Model;
 using System;
 using System.Collections.Generic;
@@ -29,7 +31,7 @@ namespace FourStationDemura
         /// <summary>
         /// 是否有过旋转动作
         /// </summary>
-        private bool IsRotate = false;
+        private bool bRotated = false;
 
         /// <summary>
         /// 是否正在旋转(指转盘的动作)
@@ -138,7 +140,33 @@ namespace FourStationDemura
         public FormAutomaticCheck()
         {
             InitializeComponent();
+
+#if DEBUG
+            Button btnDebug = new Button();
+            btnDebug.Text = "DebugStart";
+            btnDebug.Click += BtnDebug_Click;
+            btnDebug.Top = this.pbRotaryTable.Top + this.pbRotaryTable.Height + 10;
+            btnDebug.Left = this.pbRotaryTable.Left;
+
+            this.splitContainer1.Panel1.Controls.Add(btnDebug);
+#endif
         }
+        #region Ted add control
+#if DEBUG
+        private void BtnDebug_Click(object sender, EventArgs e)
+        {
+            Global.IsInit = true;
+            this.isDemuraCheck = false;
+            this.isPanelOn = false;
+            this.isPanelOff = false;
+            this.isDemuraReinspection = false;
+            this.isWriteFlash = false;
+            this.isRotating = false;
+            Global.isContinue = false;
+            Global.isReset = false;
+        }
+#endif
+        #endregion
 
         #endregion
 
@@ -172,19 +200,20 @@ namespace FourStationDemura
         //        }
         //    }
         //}
-        StationConfiguration stationConfiguration = StationConfiguration.GetInstance();
+
         public void SetDgvPanelRowColor()
         {
-            int RowIndex = 0;
-            Label[] labels = new Label[stationConfiguration.Stations.Length];
 
-            for (int j = 0; j < stationConfiguration.Stations.Length; j++)
+            int RowIndex = 0;
+            Label[] labels = new Label[Global.stationConfiguration.Stations.Length];
+
+            for (int j = 0; j < Global.stationConfiguration.Stations.Length; j++)
             {
-                Station station = stationConfiguration.Stations[j];
+                Station station = Global.stationConfiguration.Stations[j];
 
 
                 Color backgroundColor = ColorTranslator.FromHtml(station.color);
-                for (int i = 0; i < stationConfiguration.PanelCountOfStation; i++)
+                for (int i = 0; i < Global.stationConfiguration.PanelCountOfStation; i++)
                 {
                     this.dgvPanel.Rows[RowIndex++].DefaultCellStyle.BackColor = backgroundColor;
                 }
@@ -226,14 +255,14 @@ namespace FourStationDemura
         //        Log.WriterExceptionLog(ex.ToString());
         //    }
         //}
-        public void DeleteDgvRow(DataGridView dgv, int startIndex,int totalRemove)
+        public void DeleteDgvRow(DataGridView dgv, int startIndex, int totalRemove)
         {
             if (dgv.InvokeRequired)
             {
                 this.BeginInvoke(new Action(delegate { DeleteDgvRow(dgv, startIndex, totalRemove); }));
                 return;
             }
-            
+
             for (int i = 0; i < totalRemove; i++)
             {
                 dgv.Rows.RemoveAt(startIndex);
@@ -346,7 +375,7 @@ namespace FourStationDemura
             this.timerAllPanelOff.Start();
             this.timerPanelOnOrPanelOff.Start();
             this.timerRotate.Start();
-            this.timeEntranceGuard.Start();
+            this.timeEntranceGuard.Start();  //检测门禁传感器的Timer
             this.timeGrating.Start();
         }
 
@@ -364,7 +393,29 @@ namespace FourStationDemura
 
             this.threadLoop = false;
         }
+        /// <summary>
+        /// 停止上下料检测
+        /// </summary>
+        public void StopCheck()
+        {
+            //检测完后关灯
+            var tasks = new List<Task>();
 
+            foreach (var iixServer in Global.ListIIXSerevr)
+            {
+                if (iixServer.IsEnable == false) continue;
+
+                if (iixServer.SvrType == SvrType.Right)
+                {
+                    tasks.Add(Task.Factory.StartNew(() =>
+                    {
+                        iixServer.DmrSvrApi.PanelOff(PgSelectCode.Primary);
+                    }));
+                }
+            }
+
+            Task.WaitAll(tasks.ToArray());
+        }
         /// <summary>
         /// 连续检查
         /// </summary>
@@ -388,6 +439,14 @@ namespace FourStationDemura
                             color = Color.FromArgb(R, G, B);
 
 
+
+
+                            this.Invoke((MethodInvoker)delegate
+                            {
+                                this.pnlColor.BackColor = color;
+                                this.gbPattern.Text = "Pattern" + i;
+                            });
+
                             //Add 2018/5/21 Set the raster color
                             var tasks = new List<Task>();
 
@@ -406,13 +465,6 @@ namespace FourStationDemura
 
                             Task.WaitAll(tasks.ToArray());
                             //Add 2018/5/21
-
-
-                            this.Invoke((MethodInvoker)delegate
-                            {
-                                this.pnlColor.BackColor = color;
-                                this.gbPattern.Text = "Pattern" + i;
-                            });
 
                             Thread.Sleep(sleepTime * 1000);
                         }
@@ -593,19 +645,20 @@ namespace FourStationDemura
             return f;
         }
         /// <summary>
-        /// 转盘旋转
+        /// 转盘旋转,并在旋转完成后执行所有测试动作
         /// </summary>
         public bool Rotating()
         {
             try
             {
+                //1.先检测转盘能不能旋转
                 if (Global.ControlCard.ReadInbit(53) == 1)
                 {
                     Log.GetInstance().WarningWrite("转盘不能旋转");
                     return false;
                 }
 
-                //气缸上
+                //2.抬起气缸
                 var fRtn = MoveExecute.SetBaffle(true);
 
                 //气缸移动不到位不处理
@@ -618,6 +671,7 @@ namespace FourStationDemura
                 this.gbPattern.Text = "Pattern";
                 this.pnlColor.BackColor = Color.White;
 
+                //3.如果处于连续测试阶段，停止连续测试  Ted??
                 if (this.btnContinuousCheck.Text == "停止检查")
                 {
                     this.btnContinuousCheck.Text = "开始检查";
@@ -629,6 +683,7 @@ namespace FourStationDemura
 
                 this.isRotating = true;
 
+                //4.获取转盘轴控制对象
                 AxisInfo axisInfo = Global.ListAxis.Where(info => info.AxisName == "转盘").FirstOrDefault();
 
                 //目标工位
@@ -638,32 +693,49 @@ namespace FourStationDemura
                 //当前位置
                 double currentWorkPos = 0;
 
+                #region Ted modified 20180524
+
+                //if (Global.WorkPos == 1)
+                //{
+                //    currentWorkPos = axisInfo.WorkPos1;
+                //    targetWorkPos = axisInfo.WorkPos2;
+                //    targetWorkPosName = "#2";
+                //}
+                //else if (Global.WorkPos == 2)
+                //{
+                //    currentWorkPos = axisInfo.WorkPos2;
+                //    targetWorkPos = axisInfo.WorkPos3;
+                //    targetWorkPosName = "#3";
+                //}
+                //else if (Global.WorkPos == 3)
+                //{
+                //    currentWorkPos = axisInfo.WorkPos3;
+                //    targetWorkPos = axisInfo.WorkPos4;
+                //    targetWorkPosName = "#4";
+                //}
+                //else if (Global.WorkPos == 4)
+                //{
+                //    currentWorkPos = axisInfo.WorkPos4;
+                //    targetWorkPos = axisInfo.WorkPos1;
+                //    targetWorkPosName = "#1";
+                //}
+
                 if (Global.WorkPos == 1)
                 {
                     currentWorkPos = axisInfo.WorkPos1;
                     targetWorkPos = axisInfo.WorkPos2;
                     targetWorkPosName = "#2";
                 }
-                else if (Global.WorkPos == 2)
+                else
                 {
                     currentWorkPos = axisInfo.WorkPos2;
                     targetWorkPos = axisInfo.WorkPos3;
-                    targetWorkPosName = "#3";
-                }
-                else if (Global.WorkPos == 3)
-                {
-                    currentWorkPos = axisInfo.WorkPos3;
-                    targetWorkPos = axisInfo.WorkPos4;
-                    targetWorkPosName = "#4";
-                }
-                else if (Global.WorkPos == 4)
-                {
-                    currentWorkPos = axisInfo.WorkPos4;
-                    targetWorkPos = axisInfo.WorkPos1;
                     targetWorkPosName = "#1";
                 }
 
-                //当前位置
+                #endregion
+
+                //5.获取转盘当前位置，计算转盘的目标位置
                 var currPos = Global.ControlCard.GetPosition(axisInfo, false);
 
                 //目标位置
@@ -676,15 +748,16 @@ namespace FourStationDemura
                     Global.ControlCard.SetPosition(axisInfo, false);
                 }
 
-                axisInfo.PosiMode = 1;
-                var f = MoveExecute.Pmove(axisInfo, false);
+                axisInfo.PosiMode = 1;  //轴的位移模式，0表示相对位移，1表示绝对位移
+                var f = MoveExecute.Pmove(axisInfo, false);//轴定长运动，不打印log
 
+                //6.判断转盘旋转后是否旋转到指定的位置
                 if (f && Global.ControlCard.GetPosition(axisInfo, false) == axisInfo.Dist)
                 {
                     //亮绿灯
-                    Global.ControlCard.WriteOutbit(27, 1);
+                    Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("绿灯"), 1);
                     Log.GetInstance().NormalWrite("转盘到达指定位置");
-                    this.IsRotate = true;
+                    this.bRotated = true;
 
                     //将dgv中屏幕信息调换位置
                     DataGridViewRow row = null;
@@ -704,15 +777,16 @@ namespace FourStationDemura
                     return false;
                 }
 
+                //7.屏幕旋转后，对应需要旋转显示工作状态的图片
                 this.BeginInvoke((MethodInvoker)delegate
                 {
                     Image img = this.pbRotaryTable.Image;
                     Bitmap bmp = new Bitmap(img);
-                    this.pbRotaryTable.Image = Rotate(bmp, -90);
+                    this.pbRotaryTable.Image = Rotate(bmp, -(360 / Global.stationConfiguration.Stations.Length));
                     this.pbRotaryTable.SizeMode = PictureBoxSizeMode.StretchImage;
                 });
 
-                //转盘旋转后重新设置屏幕所在的工作位置
+                //8.转盘旋转后重新设置屏幕所在的工作位置
                 MoveExecute.SetPanelCurrentWorkPos();
 
                 if (Global.WorkPos == 4)
@@ -919,106 +993,106 @@ namespace FourStationDemura
             try
             {
                 //如果转盘有过旋转
-                if (this.IsRotate)
+                if (this.bRotated)
                 {
                     //点灯前需要删除最早的3块屏信息
                     #region Ted Modified 20180521
 
                     //this.DeleteDgvRow();
-                    this.DeleteDgvRow(this.dgvPanel, 0,stationConfiguration.PanelCountOfStation);
-                    
+                    this.DeleteDgvRow(this.dgvPanel, 0, Global.stationConfiguration.PanelCountOfStation);
+
                     #endregion
                 }
 
-                this.IsRotate = false;
+                this.bRotated = false;
 
                 Log.GetInstance().NormalWrite(string.Format("开始点灯......"));
 
                 this.isPanelOn = true;
                 CmdResultCode cmdRes = CmdResultCode.Other;
 
-               //var tasks = new List<Task>();
+                //var tasks = new List<Task>();
 
-                foreach (var _iixServer in Global.ListIIXSerevr)
+                foreach (var _iixServer in Global.ListIIXSerevr)   
                 {
                     if (_iixServer.IsEnable == false) continue;
-                    if (iixServer != null && iixServer != _iixServer) continue;
+                    if (iixServer != null && iixServer != _iixServer) continue;  //如果输入参数不为null，不进行点灯动作，如果为null，点右边的灯？
 
                     if (_iixServer.SvrType == SvrType.Right)
                     {
                         //tasks.Add(Task.Factory.StartNew(() =>
                         //{
-                            //查询当前屏幕是否在集合中存在
-                            OLEDPanel panel = Global.ListOLEDPanel.Where(info => info.PanelPos == iixServer.AssociatedPanelPos).FirstOrDefault();
+                        //查询当前屏幕是否在集合中存在
+                        OLEDPanel panel = Global.ListOLEDPanel.Where(info => info.PanelPos == iixServer.AssociatedPanelPos).FirstOrDefault();
 
-                            //如果当前屏幕已经存在，
-                            if (panel != null && panel.IsRotate == false)
+                        //如果当前屏幕已经存在，
+                        if (panel != null && panel.bRotated == false)
+                        {
+                            //没有旋转，则表示人为的在当前工作位置作重复的操作
+                            if (panel.bRotated == false)
                             {
-                                //没有旋转，则表示人为的在当前工作位置作重复的操作
-                                if (panel.IsRotate == false)
+                                //从dgv中倒序找到对应的屏幕信息并删除
+                                for (int i = this.dgvPanel.Rows.Count - 1; i >= 0; i--)
                                 {
-                                    //从dgv中倒序找到对应的屏幕信息并删除
-                                    for (int i = this.dgvPanel.Rows.Count - 1; i >= 0; i--)
+                                    if (this.dgvPanel.Rows[i].Cells["Position"].Value.ToString() == _iixServer.AssociatedPanelPos)
                                     {
-                                        if (this.dgvPanel.Rows[i].Cells["Position"].Value.ToString() == _iixServer.AssociatedPanelPos)
-                                        {
-                                            this.dgvPanel.Rows.RemoveAt(i);
-                                            break;
-                                        }
-                                    }
-                                }
-                                //有旋转，则表示复检完后没有关灯又点灯，误操作
-                                else
-                                {
-                                    Log.GetInstance().WarningWrite(string.Format("[{0}]屏检测完成，请熄灯完成最后的操作"));
-                                    return;
-                                }
-                            }
-
-                            //VCR扫码
-                            string code = "";
-                            bool fRtn = MoveExecute.SweepCode(_iixServer, ref code);
-
-                            if (fRtn)
-                            {
-                                //准备点灯
-                                cmdRes = IIXExecute.SequenceStart(_iixServer, PgSelectCode.Primary);
-
-                                if (cmdRes == CmdResultCode.Success)
-                                {
-                                    //点灯前先吸附屏幕
-                                    bool f = MoveExecute.SetVacuum(_iixServer, true);
-
-                                    if (f)
-                                    {
-                                        //点灯
-                                        cmdRes = IIXExecute.PanelOn(_iixServer, PgSelectCode.Primary);
-
-                                        if (cmdRes == CmdResultCode.Success)
-                                        {
-                                            //点灯后锁住屏幕
-                                            MoveExecute.SetPanelLock(_iixServer, true);
-
-                                            //Panel切换状态，从PG check 的处理等待状态进行DeMura处理的准备
-                                            cmdRes = IIXExecute.TableRotation(_iixServer);
-                                        }
-
-                                        //显示上下料提示信息
-                                        this.ShowCkeckImg(_iixServer, true);
+                                        this.dgvPanel.Rows.RemoveAt(i);
+                                        break;
                                     }
                                 }
                             }
-
-                            //添加到dgv
-                            int index = this.dgvPanel.Rows.Add();
-                            this.dgvPanel.Rows[index].Cells["Position"].Value = _iixServer.AssociatedPanelPos;
-                            this.dgvPanel.Rows[index].Cells["Code"].Value = code;
-
-                            if (cmdRes != CmdResultCode.Success || !fRtn)
+                            //有旋转，则表示复检完后没有关灯又点灯，误操作
+                            else
                             {
-                                this.dgvPanel.Rows[index].Cells["FailureReason"].Value = fRtn == false ? "Sweep code failure" : cmdRes.ToString();
-                                this.dgvPanel.Rows[index].Cells["FailureReason"].Style.ForeColor = Color.Red;
+                                Log.GetInstance().WarningWrite(string.Format("[{0}]屏检测完成，请熄灯完成最后的操作"));
+                                return;
                             }
+                        }
+
+                        //VCR扫码
+                        string code = "";
+                        bool fRtn = MoveExecute.SweepCode(_iixServer, ref code);
+
+                        if (fRtn)
+                        {
+                            //准备点灯
+                            cmdRes = IIXExecute.SequenceStart(_iixServer, PgSelectCode.Primary);
+
+                            if (cmdRes == CmdResultCode.Success)
+                            {
+                                //点灯前先吸附屏幕
+                                bool f = MoveExecute.SetVacuum(_iixServer, true);
+
+                                if (f)
+                                {
+                                    //点灯
+                                    cmdRes = IIXExecute.PanelOn(_iixServer, PgSelectCode.Primary);
+
+                                    if (cmdRes == CmdResultCode.Success)
+                                    {
+                                        //点灯后锁住屏幕
+                                        MoveExecute.SetPanelLock(_iixServer, true);
+
+                                        //Panel切换状态，从PG check 的处理等待状态进行DeMura处理的准备
+                                        cmdRes = IIXExecute.TableRotation(_iixServer);
+                                    }
+
+                                    //显示上下料提示信息
+                                    this.ShowCkeckImg(_iixServer, true);
+                                }
+                            }
+                        }
+
+                        //添加到dgv
+                        int index = this.dgvPanel.Rows.Add();
+                        this.dgvPanel.Rows[index].Cells["Position"].Value = _iixServer.AssociatedPanelPos;
+                        this.dgvPanel.Rows[index].Cells["Code"].Value = code;
+
+                        if (cmdRes != CmdResultCode.Success || !fRtn)
+                        {
+                            this.dgvPanel.Rows[index].Cells["FailureReason"].Value = fRtn == false ? "Sweep code failure" : cmdRes.ToString();
+                            this.dgvPanel.Rows[index].Cells["FailureReason"].Style.ForeColor = Color.Red;
+                        }
                         //}));
                     }
                 }
@@ -1079,7 +1153,7 @@ namespace FourStationDemura
                             if (panel != null)
                             {
                                 //没有旋转，则表示人为的在当前工作位置作重复的操作
-                                if (panel.IsRotate == false)
+                                if (panel.bRotated == false)
                                 {
                                     //从dgv中倒序找到对应的屏幕信息并删除
                                     for (int i = this.dgvPanel.Rows.Count - 1; i >= 0; i--)
@@ -1293,13 +1367,6 @@ namespace FourStationDemura
         #region 事件
 
 
-        public bool ss(bool f,int i)
-        {
-            Thread.Sleep(1000 * i);
-
-            return f;
-        }
-
         public void test()
         {
             #region Ted Modified 20180521
@@ -1318,7 +1385,7 @@ namespace FourStationDemura
 
             //}
 
-            for (int i = 0; i < stationConfiguration.PanelCountOfStation * stationConfiguration.Stations.Length; i++)
+            for (int i = 0; i < Global.stationConfiguration.PanelCountOfStation * Global.stationConfiguration.Stations.Length; i++)
             {
 
                 int index = this.dgvPanel.Rows.Add();
@@ -1333,8 +1400,8 @@ namespace FourStationDemura
 
                 #endregion
             }
-                SetDgvPanelRowColor();
-            
+            SetDgvPanelRowColor();
+
         }
 
         private void FormAutomaticCheck_Load(object sender, EventArgs e)
@@ -1344,11 +1411,11 @@ namespace FourStationDemura
 
             this.pbRotaryTable.Image = Image.FromFile(Application.StartupPath + "\\Image\\RotaryTable.png");
             this.gbCheckPrompt.Width = 147 * 3 + 24;
-            
+
             #region Ted modified 20180522
 
             //for (int i = 1; i <= 3; i++)
-            for (int i=1;i<=stationConfiguration.PanelCountOfStation;i++)
+            for (int i = 1; i <= Global.stationConfiguration.PanelCountOfStation; i++)
             {
                 this.promptInfo = new UserPromptInfo("#" + i);
                 this.promptInfo.SetPromptInfo(this.imgList.Images["No.png"], "不能上料");
@@ -1358,7 +1425,7 @@ namespace FourStationDemura
             }
 
             //this.gbCheckPrompt.Width = this.promptInfo.Width * 3 + 24;
-            this.gbCheckPrompt.Width = (this.promptInfo.Width +8)* stationConfiguration.PanelCountOfStation;
+            this.gbCheckPrompt.Width = (this.promptInfo.Width + 8) * Global.stationConfiguration.PanelCountOfStation;
             #endregion
 
             //初始化检查主界面是否初始化完成
@@ -1412,16 +1479,16 @@ namespace FourStationDemura
         /// <param name="e"></param>
         private void TimeGrating_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            if (Global.IoCard.ReadInBit(2) == 1)
+            if (Global.IoCard.ReadInBit((ushort)Global.GetIOPortNoByName("安全光栅")) == 1)
             {
                 this.Stop();
 
                 Global.ControlCard.AxisStop(null, AxisStopType.EmgStop, true);
 
                 //报警提示
-                Global.ControlCard.WriteOutbit(28, 1);
+                Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("报警"), 1);
                 //亮红灯
-                Global.ControlCard.WriteOutbit(25, 1);
+                Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("红灯"), 1);
 
                 Log.GetInstance().WarningWrite("需点击“继续Demura”后继续开始检测");
 
@@ -1436,21 +1503,28 @@ namespace FourStationDemura
         /// <param name="e"></param>
         private void TimeEntranceGuard_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            if (Global.IoCard.ReadInBit(1) == 1)
+#if TimerSuspend
+            System.Timers.Timer t = (System.Timers.Timer)sender;
+            t.Stop();
+#endif
+            if (Global.IoCard.ReadInBit((ushort)Global.GetIOPortNoByName("急停按键")) == 1)
             {
                 this.Stop();
 
                 Global.ControlCard.AxisStop(null, AxisStopType.EmgStop, true);
 
                 //报警提示
-                Global.ControlCard.WriteOutbit(28, 1);
+                Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("报警"), 1);
                 //亮红灯
-                Global.ControlCard.WriteOutbit(25, 1);
+                Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("红灯"), 1);
 
                 Log.GetInstance().WarningWrite("需点击“继续Demura”后继续开始检测");
 
                 Global.isContinue = true;
             }
+#if TimerSuspend
+            t.Start();
+#endif
         }
 
         /// <summary>
@@ -1470,6 +1544,10 @@ namespace FourStationDemura
         /// <param name="e"></param>
         private void TimerRotate_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
+#if TimerSuspend
+            System.Timers.Timer t = (System.Timers.Timer)sender;
+            t.Stop();
+#endif
             if (this.IsWork())
             {
                 if (this.isAllPanelOnEvent && this.isAllPanelOffEvent)
@@ -1480,6 +1558,9 @@ namespace FourStationDemura
                     Thread.Sleep(500);
                 }
             }
+#if TimerSuspend
+            t.Start();
+#endif
         }
 
         /// <summary>
@@ -1489,38 +1570,65 @@ namespace FourStationDemura
         /// <param name="e"></param>
         private void TimerPanelOnOrPanelOff_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
+
+
+#if TimerSuspend
+            System.Timers.Timer t = (System.Timers.Timer)sender;
+            t.Stop();
+#endif
             if (this.IsWork())
             {
                 IIXServer iixServer = null;
                 string associatedPanelPos = "";
-
-                //按钮1
-                if (Global.IoCard.ReadInBit(5) == 1)
+                try
                 {
-                    //按钮灯亮
-                    Global.ControlCard.WriteOutbit(31, 1);
+                    //读取按钮状态
+                    ////按钮1
+                    //if (Global.IoCard.ReadInBit((ushort)Global.GetIOPortNoByName("按钮1")) == 1)
+                    //{
+                    //    //按钮灯亮
+                    //    Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("按钮1灯"), 1);
 
-                    associatedPanelPos = "#1";
-                }
-                //按钮2
-                else if (Global.IoCard.ReadInBit(6) == 1)
-                {
-                    Global.ControlCard.WriteOutbit(32, 1);
+                    //    associatedPanelPos = "#1";
+                    //}
+                    ////按钮2
+                    //else if (Global.IoCard.ReadInBit((ushort)Global.GetIOPortNoByName("按钮2")) == 1)
+                    //{
+                    //    Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("按钮2灯"), 1);
 
-                    associatedPanelPos = "#2";
-                }
-                //按钮3
-                else if (Global.IoCard.ReadInBit(7) == 1)
-                {
-                    Global.ControlCard.WriteOutbit(59, 1);
+                    //    associatedPanelPos = "#2";
+                    //}
+                    ////按钮3
+                    //else if (Global.IoCard.ReadInBit((ushort)Global.GetIOPortNoByName("按钮3")) == 1)
+                    //{
+                    //    Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("按钮3灯"), 1);
 
-                    associatedPanelPos = "#3";
-                }
+                    //    associatedPanelPos = "#3";
+                    //}
 
-                iixServer = Global.ListIIXSerevr.Where(info => info.SvrType == SvrType.Right && info.AssociatedPanelPos == associatedPanelPos).FirstOrDefault();
+                    //侦测按钮电平判断按键是否按下
+                    for (int i = 1; i <= Global.stationConfiguration.PanelCountOfStation; i++)
+                    {
+                        if (Global.IoCard.ReadInBit((ushort)Global.GetIOPortNoByName("按钮" + i)) == 1)
+                        {
+                            Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("按钮" + i + "灯"), 1);
+                            associatedPanelPos = "#" + i;
+                            break;
+                        }
+                    }
 
-                if (iixServer != null)
-                {
+                    if (associatedPanelPos == "") //为空表示无按键按下
+                    {
+                        return;
+                    }
+
+                    iixServer = Global.ListIIXSerevr.Where(info => info.SvrType == SvrType.Right && info.AssociatedPanelPos == associatedPanelPos).FirstOrDefault();
+
+                    if (iixServer == null) //对应位置的panel的按钮按下，找到对应的slave，进行测试等等
+                    {
+                        throw new Exception("The right " + associatedPanelPos + " slave config error");
+                    }
+
                     //如果已经点灯，则关灯
                     if (iixServer.IsPanelOn)
                     {
@@ -1532,22 +1640,21 @@ namespace FourStationDemura
                     }
 
                     Thread.Sleep(500);
+
+                    //测试完成，按钮灯灭
+                    associatedPanelPos = associatedPanelPos.Replace("#", "");
+                    Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("按钮" + Convert.ToInt32(associatedPanelPos) + "灯"), 0);
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
                 }
 
-                if (associatedPanelPos == "#1")
-                {
-                    //按钮灯灭
-                    Global.ControlCard.WriteOutbit(31, 0);
-                }
-                else if (associatedPanelPos == "#2")
-                {
-                    Global.ControlCard.WriteOutbit(32, 0);
-                }
-                else if (associatedPanelPos == "#3")
-                {
-                    Global.ControlCard.WriteOutbit(59, 0);
-                }
+
             }
+#if TimerSuspend
+            t.Start();
+#endif
         }
 
         /// <summary>
@@ -1557,13 +1664,17 @@ namespace FourStationDemura
         /// <param name="e"></param>
         private void TimerAllPanelOff_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
+#if TimerSuspend
+            System.Timers.Timer t = (System.Timers.Timer)sender;
+            t.Stop();
+#endif
             if (this.IsWork())
             {
                 //启动按钮2
                 if (Global.IoCard.ReadInBit(4) == 1) //侦测IO口，启动按键2是否按下
                 {
                     //启动按钮灯亮
-                    Global.ControlCard.WriteOutbit(30, 0);
+                    Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("启动按钮2灯"), 0);
 
                     this.isAllPanelOffEvent = true;
 
@@ -1579,6 +1690,9 @@ namespace FourStationDemura
                     }
                 }
             }
+#if TimerSuspend
+            t.Start();
+#endif
         }
 
         /// <summary>
@@ -1588,28 +1702,35 @@ namespace FourStationDemura
         /// <param name="e"></param>
         private void TimerAllPanelOn_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
+#if TimerSuspend
+            System.Timers.Timer t = (System.Timers.Timer)sender;
+            t.Stop();
+#endif
             if (this.IsWork())
             {
                 //启动按钮1
                 if (Global.IoCard.ReadInBit(3) == 1)
                 {
                     //启动按钮灯亮
-                    Global.ControlCard.WriteOutbit(29, 0);
+                    Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("启动按钮1灯"), 0);
 
-                    this.isAllPanelOnEvent = true;
+                    this.isAllPanelOnEvent = true;    //此值为true表明这个键被按下
 
                     //休眠一秒，看关灯按钮是否触发
                     Thread.Sleep(1000);
 
-                    if (this.isAllPanelOffEvent == false)
+                    if (this.isAllPanelOffEvent == false)  //表明熄灯按键没有按下
                     {
-                        this.PanelOn();
+                        this.PanelOn();                    //点屏
                         this.isAllPanelOnEvent = false;
 
                         Thread.Sleep(500);
                     }
                 }
             }
+#if TimerSuspend
+            t.Start();
+#endif
         }
 
         /// <summary>
@@ -1731,26 +1852,60 @@ namespace FourStationDemura
                     return;
                 }
 
-                //判断Pattern是否启用
-                if (IniFile.IniReadValue("Pattern" + this.patternNumber, "Enabled", Global.ProductSettingPath) == "1")
+                this.StopCheck();
+
+                if (this.btnSingleCheck.Text == "开始检查")
                 {
-                    int R = Convert.ToInt32(IniFile.IniReadValue("Pattern" + this.patternNumber, "R", Global.ProductSettingPath));
-                    int G = Convert.ToInt32(IniFile.IniReadValue("Pattern" + this.patternNumber, "G", Global.ProductSettingPath));
-                    int B = Convert.ToInt32(IniFile.IniReadValue("Pattern" + this.patternNumber, "B", Global.ProductSettingPath));
-                    int sleepTime = Convert.ToInt32(IniFile.IniReadValue("Pattern" + this.patternNumber, "SleepTime", Global.ProductSettingPath));
+                    this.btnSingleCheck.Text = "停止检查";
 
-                    Color color = Color.FromArgb(R, G, B);
 
-                    this.pnlColor.BackColor = color;
-                    this.gbPattern.Text = "Pattern" + this.patternNumber;
 
-                    this.btnSingleCheck.Enabled = false;
-                    this.btnOnColor.Enabled = true;
-                    this.btnNextColor.Enabled = true;
+
+                    //判断Pattern是否启用
+                    if (IniFile.IniReadValue("Pattern" + this.patternNumber, "Enabled", Global.ProductSettingPath) == "1")
+                    {
+                        int R = Convert.ToInt32(IniFile.IniReadValue("Pattern" + this.patternNumber, "R", Global.ProductSettingPath));
+                        int G = Convert.ToInt32(IniFile.IniReadValue("Pattern" + this.patternNumber, "G", Global.ProductSettingPath));
+                        int B = Convert.ToInt32(IniFile.IniReadValue("Pattern" + this.patternNumber, "B", Global.ProductSettingPath));
+                        int sleepTime = Convert.ToInt32(IniFile.IniReadValue("Pattern" + this.patternNumber, "SleepTime", Global.ProductSettingPath));
+
+                        Color color = Color.FromArgb(R, G, B);
+
+
+                        this.pnlColor.BackColor = color;
+                        this.gbPattern.Text = "Pattern" + this.patternNumber;
+
+                        this.btnOnColor.Enabled = true;
+                        this.btnNextColor.Enabled = true;
+
+                        var tasks = new List<Task>();
+
+                        foreach (var iixServer in Global.ListIIXSerevr)
+                        {
+                            if (iixServer.IsEnable == false) continue;
+
+                            if (iixServer.SvrType == SvrType.Right)
+                            {
+                                tasks.Add(Task.Factory.StartNew(() =>
+                                {
+                                    IIXExecute.SetRasterImage(iixServer, PgSelectCode.Primary, color, false);
+                                }));
+                            }
+                        }
+
+                        Task.WaitAll(tasks.ToArray());
+                    }
+                    else
+                    {
+                        Log.GetInstance().NormalWrite("没有设置Pattern，请去“系统设置中”设置");
+                    }
                 }
                 else
                 {
-                    Log.GetInstance().NormalWrite("没有设置Pattern，请去“系统设置中”设置");
+                    this.btnSingleCheck.Text = "开始检查";
+                    this.btnSingleCheck.Enabled = true;
+                    this.btnOnColor.Enabled = false;
+                    this.btnNextColor.Enabled = false;
                 }
             }
             catch (Exception ex)
@@ -1791,8 +1946,13 @@ namespace FourStationDemura
 
                     Color color = Color.FromArgb(R, G, B);
 
+                    this.pnlColor.BackColor = color;
+                    this.gbPattern.Text = "Pattern" + this.patternNumber;
 
-                    //Add 2018/5/21 Set the raster color
+
+                    this.btnOnColor.Enabled = true;
+                    this.btnNextColor.Enabled = true;
+
                     var tasks = new List<Task>();
 
                     foreach (var iixServer in Global.ListIIXSerevr)
@@ -1809,15 +1969,6 @@ namespace FourStationDemura
                     }
 
                     Task.WaitAll(tasks.ToArray());
-                    //Add 2018/5/21
-
-
-                    this.pnlColor.BackColor = color;
-                    this.gbPattern.Text = "Pattern" + this.patternNumber;
-
-                    this.btnSingleCheck.Enabled = false;
-                    this.btnOnColor.Enabled = true;
-                    this.btnNextColor.Enabled = true;
                 }
             }
             catch (Exception ex)
@@ -1858,8 +2009,13 @@ namespace FourStationDemura
 
                     Color color = Color.FromArgb(R, G, B);
 
+                    this.pnlColor.BackColor = color;
+                    this.gbPattern.Text = "Pattern" + this.patternNumber;
 
-                    //Add 2018/5/21 Set the raster color
+
+                    this.btnOnColor.Enabled = true;
+                    this.btnNextColor.Enabled = true;
+
                     var tasks = new List<Task>();
 
                     foreach (var iixServer in Global.ListIIXSerevr)
@@ -1876,15 +2032,6 @@ namespace FourStationDemura
                     }
 
                     Task.WaitAll(tasks.ToArray());
-                    //Add 2018/5/21
-
-
-                    this.pnlColor.BackColor = color;
-                    this.gbPattern.Text = "Pattern" + this.patternNumber;
-
-                    this.btnSingleCheck.Enabled = false;
-                    this.btnOnColor.Enabled = true;
-                    this.btnNextColor.Enabled = true;
                 }
                 else
                 {

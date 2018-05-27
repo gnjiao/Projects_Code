@@ -1,4 +1,5 @@
 ﻿using IIXDeMuraApi;
+using Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -103,7 +104,7 @@ namespace FourStationDemura
                         //报警提示
                         Global.ControlCard.WriteOutbit(28, 1);
                         //亮红灯
-                        Global.ControlCard.WriteOutbit(25, 1);
+                        Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("红灯"), 1);
 
                         Log.GetInstance().WarningWrite(string.Format("[{0}]轴回原点运动超时", axisInfo.AxisName));
 
@@ -199,7 +200,7 @@ namespace FourStationDemura
                         //报警提示
                         Global.ControlCard.WriteOutbit(28, 1);
                         //亮红灯
-                        Global.ControlCard.WriteOutbit(25, 1);
+                        Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("红灯"), 1);
 
                         Log.GetInstance().WarningWrite(string.Format("[{0}]轴定长运动超时", axisInfo.AxisName));
 
@@ -302,7 +303,7 @@ namespace FourStationDemura
         {
             foreach (var panel in Global.ListOLEDPanel)
             {
-                panel.IsRotate = true;
+                panel.bRotated = true;
 
                 if (panel.PanelWorkPos == "1#")
                 {
@@ -345,7 +346,7 @@ namespace FourStationDemura
                         //报警提示
                         Global.ControlCard.WriteOutbit(28, 1);
                         //亮红灯
-                        Global.ControlCard.WriteOutbit(25, 1);
+                        Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("红灯"), 1);
 
                         Log.GetInstance().WarningWrite(string.Format("屏[{0}]{1}超时", iixServer.AssociatedPanelPos, isVacuum == true ? "真空" : "破真空"));
 
@@ -666,7 +667,7 @@ namespace FourStationDemura
                         //点灯
                         if (isPanelOn)
                         {
-                            Global.ControlCard.WriteOutbit(25, 1);
+                            Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("红灯"), 1);
                         }
                         //关灯
                         else
@@ -679,12 +680,12 @@ namespace FourStationDemura
                         //点灯
                         if (isPanelOn)
                         {
-                            Global.ControlCard.WriteOutbit(26, 1);
+                            Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("红灯"), 1);
                         }
                         //关灯
                         else
                         {
-                            Global.ControlCard.WriteOutbit(26, 0);
+                           Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("黄灯"), 0);
                         }
                     }
                     else if (iixServer.AssociatedPanelPos == "#3")
@@ -692,7 +693,8 @@ namespace FourStationDemura
                         //点灯
                         if (isPanelOn)
                         {
-                            Global.ControlCard.WriteOutbit(27, 1);
+                            //Global.ControlCard.WriteOutbit(27, 1);
+                             Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("绿灯"), 1);
                         }
                         //关灯
                         else
@@ -714,7 +716,7 @@ namespace FourStationDemura
                         //关灯
                         else
                         {
-                            Global.ControlCard.WriteOutbit(28, 0);
+                            Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("报警"), 1);
                         }
                     }
                     else if (iixServer.AssociatedPanelPos == "#2")
@@ -722,7 +724,7 @@ namespace FourStationDemura
                         //点灯
                         if (isPanelOn)
                         {
-                            Global.ControlCard.WriteOutbit(29, 1);
+                            Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("启动按钮1灯"), 1);
                         }
                         //关灯
                         else
@@ -735,7 +737,7 @@ namespace FourStationDemura
                         //点灯
                         if (isPanelOn)
                         {
-                            Global.ControlCard.WriteOutbit(30, 1);
+                            Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("启动按钮2灯"), 1);
                         }
                         //关灯
                         else
@@ -752,7 +754,7 @@ namespace FourStationDemura
                         //点灯
                         if (isPanelOn)
                         {
-                            Global.ControlCard.WriteOutbit(31, 1);
+                            Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("按钮1灯"), 1);
                         }
                         //关灯
                         else
@@ -765,7 +767,7 @@ namespace FourStationDemura
                         //点灯
                         if (isPanelOn)
                         {
-                            Global.ControlCard.WriteOutbit(32, 1);
+                            Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("按钮2灯"), 1);
                         }
                         //关灯
                         else
@@ -778,7 +780,7 @@ namespace FourStationDemura
                         //点灯
                         if (isPanelOn)
                         {
-                            Global.ControlCard.WriteOutbit(59, 1);
+                            Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("按钮3灯"), 1);
                         }
                         //关灯
                         else
@@ -852,6 +854,7 @@ namespace FourStationDemura
                 //因为要等待IO信号到位，所以需要循坏等待到位信号
                 while (true)
                 {
+                    //如果超出了等待时间就要报警
                     if (waitTime == Global.CardWaitTime)
                     {
                         Log.GetInstance().WarningWrite(string.Format("{0}气缸{1}超时，可能是部件损坏，需检查设备", svrType == SvrType.Left ? "左边" : "右边", isUp == true ? "上移" : "下移"));
@@ -859,7 +862,7 @@ namespace FourStationDemura
                         //报警提示
                         Global.ControlCard.WriteOutbit(28, 1);
                         //亮红灯
-                        Global.ControlCard.WriteOutbit(25, 1);
+                        Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("红灯"), 1);
 
                         return false;
                     }
@@ -1039,7 +1042,7 @@ namespace FourStationDemura
                 {
                     Global.isReset = false;
                     //亮黄灯
-                    Global.ControlCard.WriteOutbit(26, 1);
+                    Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("红灯"), 1);
 
                     MoveExecute.NoticePgShooting(Global.WorkPos);
 
@@ -1050,7 +1053,7 @@ namespace FourStationDemura
                     //报警提示
                     Global.ControlCard.WriteOutbit(28, 1);
                     //亮红灯
-                    Global.ControlCard.WriteOutbit(25, 1);
+                    Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("红灯"), 1);
 
                     return f;
                 }
@@ -1093,7 +1096,6 @@ namespace FourStationDemura
                 Log.WriterExceptionLog(ex.ToString());
             }
         }
-
         /// <summary>
         /// 转盘道制定位置后通知PG拍摄
         /// </summary>
@@ -1104,37 +1106,39 @@ namespace FourStationDemura
             {
                 if (workPos == 1)
                 {
-                    Global.ControlCard.WriteOutbit(25, 1);
-                    Global.ControlCard.WriteOutbit(26, 1);
-                    Global.ControlCard.WriteOutbit(27, 1);
+                    Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("红灯"), 1);
+                    Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("红灯"), 1);
+                    //Global.ControlCard.WriteOutbit(27, 1);
+                    Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("绿灯"), 1);
                     Global.ControlCard.WriteOutbit(28, 1);
-                    Global.ControlCard.WriteOutbit(29, 1);
-                    Global.ControlCard.WriteOutbit(30, 1);
+                    Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("启动按钮1灯"), 1);
+                    Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("启动按钮2灯"), 1);
                 }
                 else if (workPos == 2)
                 {
-                    Global.ControlCard.WriteOutbit(25, 1);
-                    Global.ControlCard.WriteOutbit(26, 0);
-                    Global.ControlCard.WriteOutbit(27, 1);
-                    Global.ControlCard.WriteOutbit(28, 0);
-                    Global.ControlCard.WriteOutbit(29, 1);
+                    Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("红灯"), 1);
+                   Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("黄灯"), 0);
+                    //Global.ControlCard.WriteOutbit(27, 1);
+                    Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("绿灯"), 1);
+                    Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("报警"), 1);
+                    Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("启动按钮1灯"), 1);
                     Global.ControlCard.WriteOutbit(30, 0);
                 }
                 else if (workPos == 3)
                 {
                     Global.ControlCard.WriteOutbit(25, 0);
-                    Global.ControlCard.WriteOutbit(26, 1);
+                    Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("红灯"), 1);
                     Global.ControlCard.WriteOutbit(27, 0);
                     Global.ControlCard.WriteOutbit(28, 1);
                     Global.ControlCard.WriteOutbit(29, 0);
-                    Global.ControlCard.WriteOutbit(30, 1);
+                    Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("启动按钮2灯"), 1);
                 }
                 else if (workPos == 4)
                 {
                     Global.ControlCard.WriteOutbit(25, 0);
-                    Global.ControlCard.WriteOutbit(26, 0);
+                   Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("黄灯"), 0);
                     Global.ControlCard.WriteOutbit(27, 0);
-                    Global.ControlCard.WriteOutbit(28, 0);
+                    Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("报警"), 1);
                     Global.ControlCard.WriteOutbit(29, 0);
                     Global.ControlCard.WriteOutbit(30, 0);
                 }
@@ -1343,7 +1347,7 @@ namespace FourStationDemura
                     panel.DmrSvrApi = iixServer.DmrSvrApi;
                     panel.PanelWorkPos = "工位#1";
                     panel.CmdResWork = codeResult == MoveExecute.Result.Successful ? CmdResultCode.Success : CmdResultCode.Other;
-                    panel.IsRotate = false;
+                    panel.bRotated = false;
                     panel.IsPanelOn = false;
 
                     //将屏添加到集合中

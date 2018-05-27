@@ -1,4 +1,5 @@
 ﻿using IIXDeMuraApi;
+using Model;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -245,6 +246,77 @@ namespace FourStationDemura
         /// </summary>
         public static event SwitchProductDlegate SwitchProductEvent;
 
+
+
+        #region Ted modified 20180524
+        public static StationConfiguration stationConfiguration = StationConfiguration.GetInstance();
+        public static Dictionary<string, int> DicIOPorts = null;
+        private static object lockObj = new object();
+
+        /// <summary>
+        /// 获取到对应硬件对应的IO口NO
+        /// 不同的控制硬件名称肯定不同（最起码你不能命名相同），在同一张IO卡对应的端口号肯定也不同，当然你要考虑两个IO卡的问题
+        /// 配置需要Configuration/StationConfiguration.xml中配置，此方法是基于xml正确配置的情况下
+        /// 便于不同专案的IO口变动，直接从xml中修改而不需要反复修改代码
+        /// </summary>
+        /// <param name="ioName">要查询IO端口号对应硬件的名称，如按键、报警灯等</param>
+        /// <returns></returns>
+        public static int GetIOPortNoByName(string ioName)
+        {
+            try
+            {
+
+                lock (lockObj)
+                {
+                     
+                    if (DicIOPorts == null) //第一次初始化dic对象
+                    {
+                        DicIOPorts = new Dictionary<string, int>();
+                        foreach (IOCard ioCard in stationConfiguration.IOCards) //多张IO卡也要添加进来
+                        {
+                            //先将输入口按名称和端口号加入到dic中
+                            foreach (InputPort inputPort in ioCard.InputPorts)
+                            {
+                                //初始化时要检查这个IO口名称是否有重复，重复抛异常
+                                if (DicIOPorts.Keys.Contains(inputPort.name))
+                                {
+                                    throw new Exception("More than one port named \"" + inputPort.name + "\" have been set in xml.");
+                                }
+
+                                DicIOPorts[inputPort.name] = inputPort.bitno;
+                            }
+
+                            //再将输出口按名称和端口号加入到dic中
+                            foreach (OutputPort outputPort in ioCard.OutputPorts)
+                            {
+                                if (DicIOPorts.Keys.Contains(outputPort.name))
+                                {
+                                    throw new Exception("More than one port named \"" + outputPort.name + "\" have been set in xml.");
+                                }
+
+                                DicIOPorts[outputPort.name] = outputPort.bitno;
+                            }
+
+                        }
+                    }
+
+
+                }
+
+                //获取时，如果没有此IO口，抛异常
+                if (!DicIOPorts.Keys.Contains(ioName))
+                {
+                    throw new Exception("The port \"" + ioName + "\" hasn't been set in xml.");
+                }
+
+                return DicIOPorts[ioName];
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        #endregion
         /// <summary>
         /// 运动按钮选中状态改变事件
         /// </summary>

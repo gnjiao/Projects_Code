@@ -182,7 +182,7 @@ namespace FourStationDemura
         }
 
 
-        StationConfiguration stationConfig = StationConfiguration.GetInstance();
+        StationConfiguration stationConfig = Global.stationConfiguration;
         /// <summary>
         /// 初始化IIX服务端
         /// </summary>
@@ -291,7 +291,7 @@ namespace FourStationDemura
                     tasks.Add(Task.Factory.StartNew(() =>
                     {
                         //连接
-                        cmdRes = IIXExecute.Connection(_iixServer);
+                        cmdRes = IIXExecute.ConnectToSlave(_iixServer);
 
                         //连接成功后就打开
                         if (cmdRes == CmdResultCode.Success)
@@ -660,6 +660,7 @@ namespace FourStationDemura
                     //return;
                 }
 
+                //9.根据选择的屏幕尺寸加载对应的设置
                 if (this.LoadProduct() == false)
                 {
                     //return;
@@ -669,6 +670,7 @@ namespace FourStationDemura
                 Global.SwitchProductEvent += Global_SwitchProductEvent;
                 Global.IsInit = true;
 
+                //10.Timer，用于侦测急停按钮按下
                 this.timerEmgStop = new System.Timers.Timer();
                 this.timerEmgStop.Interval = 100;
                 this.timerEmgStop.Elapsed += TimerEmgStop_Elapsed;
@@ -700,9 +702,9 @@ namespace FourStationDemura
             {
                 Global.ControlCard.AxisStop(null, AxisStopType.EmgStop, true);
                 //亮红灯
-                Global.ControlCard.WriteOutbit(25, 1);
+                Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("红灯"), 1);
                 //报警提示
-                Global.ControlCard.WriteOutbit(28, 1);
+                Global.ControlCard.WriteOutbit((ushort)Global.GetIOPortNoByName("报警"), 1);
 
                 Log.GetInstance().WarningWrite("需点击“复位”后重新开始检测");
 
@@ -901,6 +903,11 @@ namespace FourStationDemura
                 RichTextBox rtb = (RichTextBox)sender;
                 rtb.Text=rtb.Text.Remove(rtb.SelectionStart, rtb.SelectionLength);
             }
+        }
+
+        private void FormDemuraMan_Shown(object sender, EventArgs e)
+        {
+            MessageBox.Show("Test");
         }
     }
 }

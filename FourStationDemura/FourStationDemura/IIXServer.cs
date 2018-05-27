@@ -310,7 +310,7 @@ namespace FourStationDemura
         /// </summary>
         /// <param name="pg"></param>
         public void SetSequenceEnd(PgSelectCode pg)
-        {
+        { 
             int idx = pg.GetArrayIndex();
             this.OutlineState[idx] = OutlineStateCode.Stable;
         }

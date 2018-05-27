@@ -372,6 +372,7 @@
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormDemuraMan_FormClosing);
             this.Load += new System.EventHandler(this.FormDemuraMan_Load);
+            this.Shown += new System.EventHandler(this.FormDemuraMan_Shown);
             this.SizeChanged += new System.EventHandler(this.FormDemuraMan_SizeChanged);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
