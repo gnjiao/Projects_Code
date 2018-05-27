@@ -1,5 +1,0 @@
-2018/5/2 星期三 下午 2:45:38
-System.ArgumentException: 未能找到名为 State 的列。
-参数名: columnName
-   在 System.Windows.Forms.DataGridViewCellCollection.get_Item(String columnName)
-   在 FourStationDemura.FormDemuraMan.InitIIXServer() 位置 G:\Demura四工位半自动机台--柔宇\FourStationDemura\FourStationDemura\FormDemuraMan.cs:行号 163
