@@ -1,0 +1,9 @@
+2018/5/22 16:55:26
+System.NullReferenceException: 未将对象引用设置到对象的实例。
+   在 FourStationDemura.FormDemuraMan.InitIIXServer() 位置 E:\WorkSpace\FourStationDemura\FourStationDemura\FourStationDemura\FormDemuraMan.cs:行号 204
+2018/5/22 18:12:48
+Slave 192.168.0.2:50005 connected FAIL!
+2018/5/22 18:12:48
+Slave 192.168.0.1:50005 connected FAIL!
+2018/5/22 18:12:48
+Slave 192.168.0.3:50005 connected FAIL!

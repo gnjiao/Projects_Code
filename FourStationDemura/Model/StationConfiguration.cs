@@ -44,7 +44,6 @@ namespace Model
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayItemAttribute("SlaveGroup", IsNullable = false)]
         public SlaveGroup[] SlaveGroups { set; get; }
-<<<<<<< HEAD
 
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayItemAttribute("ControlCard", IsNullable = false)]
@@ -55,13 +54,6 @@ namespace Model
         public IOCard[] IOCards { set; get; }
     }
 
-=======
-        [System.Xml.Serialization.XmlElementAttribute("ControlCards")]
-        public ControlCards ControlCardsCollection { set; get; }
-    }
-
-
->>>>>>> 7dd02fc4a651d4dd43ed3a783b4181752185c3b0
     /// <remarks/>
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
     public partial class Station
@@ -133,7 +125,6 @@ namespace Model
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
         public string name { set; get; }
-<<<<<<< HEAD
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
@@ -295,39 +286,4 @@ namespace Model
 
 
 
-=======
-    }
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType =true)]
-    public partial class ControlCards
-    {
-        [System.Xml.Serialization.XmlElementAttribute("ControlCard")]
-        public ControlCard[] Cards { set; get; }
-    }
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public class ControlCard
-    {
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public double cardno { set; get; }
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string description { set; get; }
-        [System.Xml.Serialization.XmlElementAttribute("Axis")]
-        public Axis[] AxisCollection { set; get; }
-
-    }
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType =true)]
-    public class Axis
-    {
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public int num { set; get; }
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public double step { set; get; }
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public double Lead { set; get; }
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public double Speed { set; get; }
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public double MaxLimitmm { set; get; }
-        public double WorkStation { set; get; }
-    }
->>>>>>> 7dd02fc4a651d4dd43ed3a783b4181752185c3b0
 }

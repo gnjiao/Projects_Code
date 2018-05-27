@@ -3,7 +3,6 @@
 	<PanelCountOfStation>4</PanelCountOfStation>
 	<Station name="Station1" color="#808080"/>
 	<Station name="Station2" color="#CC00FF"/>
-<<<<<<< HEAD
 	<SlaveGroups>
 		<SlaveGroup name="" description="">
 			<Slave ip="192.168.0.1" port="3000" enable="true" description="相机1" name="Camera1"/>
@@ -11,20 +10,12 @@
 			<Slave ip="192.168.0.3" port="3000" enable="true" description="相机3" name="Camera3"/>
 		</SlaveGroup>
 	</SlaveGroups>
-=======
-	<SlaveGroup name="" description="">
-		<Slave ip="192.168.0.1" port="3000" enable="true" description="相机1" name="Camera1"/>
-		<Slave ip="192.168.0.2" port="3000" enable="true" description="相机2" name="Camera2"/>
-		<Slave ip="192.168.0.3" port="3000" enable="true" description="相机3" name="Camera3"/>
-	</SlaveGroup>
->>>>>>> 7dd02fc4a651d4dd43ed3a783b4181752185c3b0
 	<ControlCards>
 		<ControlCard cardno="0" name="" description="">
 			<Axis num="0" step="10000" Lead="360" Speed="100" MaxLimitmm="360">
 				<WorkPosition>30</WorkPosition>
 				<WorkPosition>210</WorkPosition>
 			</Axis>
-<<<<<<< HEAD
 			<Axis num="0" step="10000" Lead="360" Speed="100" MaxLimitmm="360">
 				<WorkPosition>30</WorkPosition>
 				<WorkPosition>210</WorkPosition>
@@ -53,8 +44,4 @@
 			<InputPort name="按钮4" bitno="107" EventTrigger="LogicLow" interval="" description=""/> 
 		</IOCard>
 	</IOCards>
-=======
-		</ControlCard>
-	</ControlCards>
->>>>>>> 7dd02fc4a651d4dd43ed3a783b4181752185c3b0
 </StationConfiguration>

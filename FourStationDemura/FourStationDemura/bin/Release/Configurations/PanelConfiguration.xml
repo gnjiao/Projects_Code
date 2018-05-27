@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Stations>
+	<PanelNum>4</PanelNum>
+	<Station name="Station1" color="blue"/>
+	<Station name="Station2" color="255,255,255"/>
+	<Station name="Station3" color="blue"/>
+	<Station name="Station4" color="blue"/>
+</Stations>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<StationConfiguration>
+	<PanelCountOfStation>4</PanelCountOfStation>
+	<Station name="Station1" color="#808080"/>
+	<Station name="Station2" color="#CC00FF"/>
+	<SlaveGroup name="" description="">
+		<Slave ip="192.168.0.1" port="3000" enable="true" description="相机1" name="Camera"/>
+		<Slave ip="192.168.0.2" port="3000" enable="true" description="相机2" name="Camera"/>
+		<Slave ip="192.168.0.3" port="3000" enable="true" description="相机3" name="Camera"/>
+	</SlaveGroup>
+</StationConfiguration>
